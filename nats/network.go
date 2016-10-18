@@ -31,9 +31,14 @@ func (n *network) Listen(address string) (net.Listener, error) {
 }
 
 func (n *network) Dial(address string) (net.Conn, error) {
-	message, err := n.conn.Request(address, []byte{}, 2*time.Second)
+	host, _, err := net.SplitHostPort(address)
 	if err != nil {
-		return nil, errors.Wrapf(err, "requesting address from [%s] failed", address)
+		host = address
+	}
+
+	message, err := n.conn.Request(host, []byte{}, 2*time.Second)
+	if err != nil {
+		return nil, errors.Wrapf(err, "requesting address from [%s] failed", host)
 	}
 
 	packet, err := receivePacket(message.Data)

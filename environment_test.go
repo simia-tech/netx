@@ -1,7 +1,9 @@
 package netx_test
 
 import (
+	"fmt"
 	"net"
+	"net/http"
 	"testing"
 
 	n "github.com/nats-io/nats"
@@ -13,9 +15,7 @@ import (
 const defaultNatsURL = "nats://localhost:4222"
 
 func setUpTestListener(tb testing.TB) net.Listener {
-	address := n.NewInbox()
-
-	listener, err := netx.Listen(defaultNatsURL, address)
+	listener, err := netx.Listen(defaultNatsURL, n.NewInbox())
 	require.NoError(tb, err)
 
 	go func() {
@@ -29,4 +29,32 @@ func setUpTestListener(tb testing.TB) net.Listener {
 	}()
 
 	return listener
+}
+
+func setUpTestHTTPServer(tb testing.TB) (net.Addr, func()) {
+	listener, err := netx.Listen(defaultNatsURL, n.NewInbox())
+	require.NoError(tb, err)
+
+	mux := &http.ServeMux{}
+	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "test")
+	})
+
+	server := &http.Server{
+		Handler: mux,
+	}
+	go func() {
+		require.NoError(tb, server.Serve(listener))
+	}()
+
+	return listener.Addr(), func() {
+		require.NoError(tb, listener.Close())
+	}
+}
+
+func setUpTestHTTPClient(tb testing.TB) *http.Client {
+	network, err := netx.NewNetwork(defaultNatsURL)
+	require.NoError(tb, err)
+	transport := netx.NewTransport(network)
+	return &http.Client{Transport: transport}
 }

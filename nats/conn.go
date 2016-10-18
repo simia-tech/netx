@@ -1,6 +1,7 @@
 package nats
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -18,9 +19,18 @@ type conn struct {
 
 	subscription *n.Subscription
 	dataChan     chan []byte
+
+	readDeadline  time.Time
+	writeDeadline time.Time
 }
 
 func newConn(network *network, localInbox, remoteInbox string) (*conn, error) {
+	c := &conn{
+		network:     network,
+		localInbox:  localInbox,
+		remoteInbox: remoteInbox,
+	}
+
 	dataChan := make(chan []byte)
 	subscription, err := network.conn.Subscribe(localInbox, func(message *n.Msg) {
 		packet, err := receivePacket(message.Data)
@@ -33,6 +43,8 @@ func newConn(network *network, localInbox, remoteInbox string) (*conn, error) {
 		case model.Packet_DATA:
 			dataChan <- packet.Payload
 		case model.Packet_CLOSE:
+			c.subscription.Unsubscribe()
+			c.subscription = nil
 			close(dataChan)
 		default:
 			log.Printf("unknown packet type %s", packet.Type)
@@ -42,24 +54,39 @@ func newConn(network *network, localInbox, remoteInbox string) (*conn, error) {
 		return nil, err
 	}
 
-	return &conn{
-		network:      network,
-		localInbox:   localInbox,
-		remoteInbox:  remoteInbox,
-		subscription: subscription,
-		dataChan:     dataChan,
-	}, nil
+	c.subscription = subscription
+	c.dataChan = dataChan
+
+	return c, nil
 }
 
 func (c *conn) Read(buffer []byte) (int, error) {
-	data, ok := <-c.dataChan
-	if !ok {
+	if c.subscription == nil {
 		return 0, io.ErrClosedPipe
 	}
-	return copy(buffer, data), nil
+	if c.readDeadline.IsZero() {
+		data, ok := <-c.dataChan
+		if !ok {
+			return 0, io.ErrClosedPipe
+		}
+		return copy(buffer, data), nil
+	} else {
+		select {
+		case data, ok := <-c.dataChan:
+			if !ok {
+				return 0, io.ErrClosedPipe
+			}
+			return copy(buffer, data), nil
+		case <-time.After(c.readDeadline.Sub(time.Now())):
+			return 0, errors.New("timeout")
+		}
+	}
 }
 
 func (c *conn) Write(buffer []byte) (int, error) {
+	if c.subscription == nil {
+		return 0, io.ErrClosedPipe
+	}
 	if err := c.sendPacket(model.Packet_DATA, buffer); err != nil {
 		return 0, err
 	}
@@ -67,12 +94,16 @@ func (c *conn) Write(buffer []byte) (int, error) {
 }
 
 func (c *conn) Close() error {
+	if c.subscription == nil {
+		return nil
+	}
 	if err := c.sendPacket(model.Packet_CLOSE, nil); err != nil {
 		return err
 	}
 	if err := c.subscription.Unsubscribe(); err != nil {
 		return err
 	}
+	c.subscription = nil
 	return nil
 }
 
@@ -85,14 +116,18 @@ func (c *conn) RemoteAddr() net.Addr {
 }
 
 func (c *conn) SetDeadline(t time.Time) error {
+	c.readDeadline = t
+	c.writeDeadline = t
 	return nil
 }
 
 func (c *conn) SetReadDeadline(t time.Time) error {
+	c.readDeadline = t
 	return nil
 }
 
 func (c *conn) SetWriteDeadline(t time.Time) error {
+	c.writeDeadline = t
 	return nil
 }
 

@@ -10,17 +10,21 @@ import (
 )
 
 type listener struct {
-	network *network
-	address string
+	network      *network
+	address      string
+	subscription *n.Subscription
 }
 
 func (l *listener) Accept() (net.Conn, error) {
-	subscription, err := l.network.conn.QueueSubscribeSync(l.address, l.address)
-	if err != nil {
-		return nil, err
+	if l.subscription == nil {
+		subscription, err := l.network.conn.QueueSubscribeSync(l.address, l.address)
+		if err != nil {
+			return nil, err
+		}
+		l.subscription = subscription
 	}
 
-	message, err := subscription.NextMsg(100 * time.Millisecond)
+	message, err := l.subscription.NextMsg(100 * time.Second)
 	if err != nil {
 		return nil, err
 	}
