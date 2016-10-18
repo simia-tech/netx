@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -30,7 +29,6 @@ func TestHTTP(t *testing.T) {
 func BenchmarkHTTPSimpleGet(b *testing.B) {
 	addr, tearDown := setUpTestHTTPServer(b)
 	defer tearDown()
-	time.Sleep(100 * time.Millisecond)
 
 	client := setUpTestHTTPClient(b)
 	b.ResetTimer()
