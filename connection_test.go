@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	n "github.com/nats-io/nats"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -13,7 +12,7 @@ import (
 )
 
 func TestConnection(t *testing.T) {
-	listener := setUpTestListener(t)
+	listener, _ := setUpTestEchoListener(t)
 	defer listener.Close()
 
 	conn, err := netx.Dial(defaultNatsURL, listener.Addr().String())
@@ -27,69 +26,41 @@ func TestConnection(t *testing.T) {
 }
 
 func TestConnectionClientClose(t *testing.T) {
-	listener, err := netx.Listen(defaultNatsURL, n.NewInbox())
-	require.NoError(t, err)
-
-	signal := make(chan error)
-	go func() {
-		conn, err := listener.Accept()
-		require.NoError(t, err)
-
-		signal <- nil
-
-		buffer := [4]byte{}
-		_, err = conn.Read(buffer[:])
-		signal <- err
-	}()
+	listener, errChan := setUpTestEchoListener(t)
+	defer listener.Close()
 
 	conn, err := netx.Dial(defaultNatsURL, listener.Addr().String())
 	require.NoError(t, err)
 
-	<-signal
 	require.NoError(t, conn.Close())
 
-	assert.Error(t, <-signal)
+	assert.Error(t, <-errChan)
 }
 
 func TestConnectionListenerClose(t *testing.T) {
-	listener, err := netx.Listen(defaultNatsURL, n.NewInbox())
-	require.NoError(t, err)
-
-	signal := make(chan error)
-	go func() {
-		conn, err := listener.Accept()
-		require.NoError(t, err)
-
-		<-signal
-
-		require.NoError(t, conn.Close())
-	}()
+	listener, _ := setUpTestEchoListener(t)
+	defer listener.Close()
 
 	conn, err := netx.Dial(defaultNatsURL, listener.Addr().String())
 	require.NoError(t, err)
 
-	signal <- nil
+	requireWrite(t, conn, []byte("test"))
+	buffer := requireRead(t, conn, 4)
+	require.Equal(t, "test", string(buffer))
 
-	buffer := [4]byte{}
 	_, err = conn.Read(buffer[:])
 	assert.Error(t, err)
 }
 
 func TestConnectionReadAfterClose(t *testing.T) {
-	listener, err := netx.Listen(defaultNatsURL, n.NewInbox())
-	require.NoError(t, err)
-
-	go func() {
-		conn, err := listener.Accept()
-		require.NoError(t, err)
-
-		require.NoError(t, conn.Close())
-	}()
+	listener, errChan := setUpTestEchoListener(t)
+	defer listener.Close()
 
 	conn, err := netx.Dial(defaultNatsURL, listener.Addr().String())
 	require.NoError(t, err)
 
 	require.NoError(t, conn.Close())
+	require.Error(t, <-errChan)
 
 	buffer := [4]byte{}
 	_, err = conn.Read(buffer[:])
@@ -98,15 +69,8 @@ func TestConnectionReadAfterClose(t *testing.T) {
 }
 
 func TestConnectionReadTimeout(t *testing.T) {
-	listener, err := netx.Listen(defaultNatsURL, n.NewInbox())
-	require.NoError(t, err)
-
-	go func() {
-		conn, err := listener.Accept()
-		require.NoError(t, err)
-
-		require.NoError(t, conn.Close())
-	}()
+	listener, _ := setUpTestEchoListener(t)
+	defer listener.Close()
 
 	conn, err := netx.Dial(defaultNatsURL, listener.Addr().String())
 	require.NoError(t, err)

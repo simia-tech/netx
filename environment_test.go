@@ -14,21 +14,39 @@ import (
 
 const defaultNatsURL = "nats://localhost:4222"
 
-func setUpTestListener(tb testing.TB) net.Listener {
-	listener, err := netx.Listen(defaultNatsURL, n.NewInbox())
+func setUpTestEchoListener(tb testing.TB, addresses ...string) (net.Listener, chan error) {
+	address := n.NewInbox()
+	if len(addresses) > 0 {
+		address = addresses[0]
+	}
+
+	listener, err := netx.Listen(defaultNatsURL, address)
 	require.NoError(tb, err)
 
+	errChan := make(chan error, 3)
 	go func() {
 		conn, err := listener.Accept()
 		require.NoError(tb, err)
 
-		buffer := requireRead(tb, conn, 4)
-		requireWrite(tb, conn, buffer)
+		buffer := [4]byte{}
+		n, err := conn.Read(buffer[:])
+		if err != nil {
+			errChan <- err
+			return
+		}
+		require.Equal(tb, len(buffer), n)
 
-		require.NoError(tb, conn.Close())
+		n, err = conn.Write(buffer[:])
+		if err != nil {
+			errChan <- err
+			return
+		}
+		require.Equal(tb, len(buffer), n)
+
+		errChan <- conn.Close()
 	}()
 
-	return listener
+	return listener, errChan
 }
 
 func setUpTestHTTPServer(tb testing.TB) (net.Addr, func()) {
