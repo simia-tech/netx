@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package model;
+
+message Packet {
+  enum Type {
+    ACCEPT = 0;
+    DATA = 1;
+  }
+  Type type = 1;
+  bytes payload = 2;
+}
