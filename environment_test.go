@@ -4,14 +4,18 @@ import (
 	"net"
 	"testing"
 
-	"github.com/simia-tech/netx"
+	n "github.com/nats-io/nats"
 	"github.com/stretchr/testify/require"
+
+	"github.com/simia-tech/netx"
 )
 
 const defaultNatsURL = "nats://localhost:4222"
 
 func setUpTestListener(tb testing.TB) net.Listener {
-	listener, err := netx.Listen(defaultNatsURL, "test")
+	address := n.NewInbox()
+
+	listener, err := netx.Listen(defaultNatsURL, address)
 	require.NoError(tb, err)
 
 	go func() {

@@ -15,7 +15,7 @@ type listener struct {
 }
 
 func (l *listener) Accept() (net.Conn, error) {
-	subscription, err := l.network.conn.QueueSubscribeSync(l.address, "queue")
+	subscription, err := l.network.conn.QueueSubscribeSync(l.address, l.address)
 	if err != nil {
 		return nil, err
 	}
@@ -26,16 +26,7 @@ func (l *listener) Accept() (net.Conn, error) {
 	}
 
 	localInbox := n.NewInbox()
-	packet := &model.Packet{
-		Type:    model.Packet_ACCEPT,
-		Payload: []byte(localInbox),
-	}
-	data, err := packet.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := l.network.conn.Publish(message.Reply, data); err != nil {
+	if err := sendPacket(l.network.conn, message.Reply, model.Packet_ACCEPT, []byte(localInbox)); err != nil {
 		return nil, err
 	}
 
@@ -47,5 +38,5 @@ func (l *listener) Close() error {
 }
 
 func (l *listener) Addr() net.Addr {
-	return nil
+	return &addr{network: l.network, address: l.address}
 }

@@ -4,17 +4,17 @@ import (
 	"net"
 	"time"
 
-	natsio "github.com/nats-io/nats"
+	n "github.com/nats-io/nats"
 	"github.com/pkg/errors"
 	"github.com/simia-tech/netx/model"
 )
 
 type network struct {
-	conn *natsio.Conn
+	conn *n.Conn
 }
 
 func JoinNetwork(url string) (*network, error) {
-	conn, err := natsio.Connect(url)
+	conn, err := n.Connect(url)
 	if err != nil {
 		return nil, err
 	}
@@ -31,16 +31,15 @@ func (n *network) Listen(address string) (net.Listener, error) {
 }
 
 func (n *network) Dial(address string) (net.Conn, error) {
-	message, err := n.conn.Request(address, []byte{}, 100*time.Millisecond)
+	message, err := n.conn.Request(address, []byte{}, 2*time.Second)
+	if err != nil {
+		return nil, errors.Wrapf(err, "requesting address from [%s] failed", address)
+	}
+
+	packet, err := receivePacket(message.Data)
 	if err != nil {
 		return nil, err
 	}
-
-	packet := &model.Packet{}
-	if err := packet.UnmarshalBinary(message.Data); err != nil {
-		return nil, err
-	}
-
 	if packet.Type != model.Packet_ACCEPT {
 		return nil, errors.Errorf("unexpected packet type %s", packet.Type)
 	}
