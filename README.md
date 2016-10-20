@@ -3,7 +3,7 @@
 This package provides an extention of go stdlib's net package. It provides extended `Listen` and `Dial` methods
 in order to enabled clients and servers for semantic addressing.
 
-The following examples require a local NATS(http://nats.io) node on port 4222.
+The following examples require a local [NATS](http://nats.io) node on port 4222.
 
 ## TCP connection example
 
