@@ -51,7 +51,7 @@ import (
 func main() {
   listener, _ := netx.Listen("nats://localhost:4222", "greeter")
 
-	mux := &http.ServeMux{}
+  mux := &http.ServeMux{}
 	mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello")
 	})
