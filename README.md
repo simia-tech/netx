@@ -16,7 +16,7 @@ import (
 
 func main() {
   listener, _ := netx.Listen("nats://localhost:4222", "echo")
-	go func() {
+  go func() {
 		conn, _ := listener.Accept()
 		defer conn.Close()
 
