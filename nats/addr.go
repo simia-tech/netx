@@ -1,12 +1,12 @@
 package nats
 
 type addr struct {
-	network *network
+	net     string
 	address string
 }
 
 func (a *addr) Network() string {
-	return a.network.conn.Opts.Name
+	return a.net
 }
 
 func (a addr) String() string {

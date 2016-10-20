@@ -23,27 +23,35 @@ func setUpTestEchoListener(tb testing.TB, addresses ...string) (net.Listener, ch
 	listener, err := netx.Listen(defaultNatsURL, address)
 	require.NoError(tb, err)
 
-	errChan := make(chan error, 3)
+	errChan := make(chan error, 1)
 	go func() {
-		conn, err := listener.Accept()
-		require.NoError(tb, err)
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				errChan <- err
+				return
+			}
 
-		buffer := [4]byte{}
-		n, err := conn.Read(buffer[:])
-		if err != nil {
-			errChan <- err
-			return
+			buffer := [4]byte{}
+			n, err := conn.Read(buffer[:])
+			if err != nil {
+				errChan <- err
+				return
+			}
+			require.Equal(tb, len(buffer), n)
+
+			n, err = conn.Write(buffer[:])
+			if err != nil {
+				errChan <- err
+				return
+			}
+			require.Equal(tb, len(buffer), n)
+
+			if err := conn.Close(); err != nil {
+				errChan <- err
+				return
+			}
 		}
-		require.Equal(tb, len(buffer), n)
-
-		n, err = conn.Write(buffer[:])
-		if err != nil {
-			errChan <- err
-			return
-		}
-		require.Equal(tb, len(buffer), n)
-
-		errChan <- conn.Close()
 	}()
 
 	return listener, errChan
@@ -71,8 +79,6 @@ func setUpTestHTTPServer(tb testing.TB) (net.Addr, func()) {
 }
 
 func setUpTestHTTPClient(tb testing.TB) *http.Client {
-	network, err := netx.NewNetwork(defaultNatsURL)
-	require.NoError(tb, err)
-	transport := netx.NewTransport(network)
+	transport := netx.NewTransport(defaultNatsURL)
 	return &http.Client{Transport: transport}
 }

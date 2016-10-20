@@ -83,3 +83,20 @@ func TestConnectionReadTimeout(t *testing.T) {
 	require.Error(t, err)
 	assert.Equal(t, err.Error(), "timeout")
 }
+
+func BenchmarkConnection(b *testing.B) {
+	listener, _ := setUpTestEchoListener(b)
+	defer listener.Close()
+
+	b.ResetTimer()
+	for index := 0; index < b.N; index++ {
+		conn, err := netx.Dial(defaultNatsURL, listener.Addr().String())
+		require.NoError(b, err)
+
+		requireWrite(b, conn, []byte("test"))
+		buffer := requireRead(b, conn, 4)
+		require.Equal(b, "test", string(buffer))
+
+		require.NoError(b, conn.Close())
+	}
+}

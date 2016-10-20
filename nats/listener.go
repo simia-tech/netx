@@ -10,14 +10,25 @@ import (
 )
 
 type listener struct {
-	network      *network
+	conn         *n.Conn
 	address      string
 	subscription *n.Subscription
 }
 
+func Listen(net, address string) (net.Listener, error) {
+	conn, err := n.Connect(net)
+	if err != nil {
+		return nil, err
+	}
+	return &listener{
+		conn:    conn,
+		address: address,
+	}, nil
+}
+
 func (l *listener) Accept() (net.Conn, error) {
 	if l.subscription == nil {
-		subscription, err := l.network.conn.QueueSubscribeSync(l.address, l.address)
+		subscription, err := l.conn.QueueSubscribeSync(l.address, l.address)
 		if err != nil {
 			return nil, err
 		}
@@ -30,17 +41,23 @@ func (l *listener) Accept() (net.Conn, error) {
 	}
 
 	localInbox := n.NewInbox()
-	if err := sendPacket(l.network.conn, message.Reply, model.Packet_ACCEPT, []byte(localInbox)); err != nil {
+	if err := sendPacket(l.conn, message.Reply, model.Packet_ACCEPT, []byte(localInbox)); err != nil {
 		return nil, err
 	}
 
-	return newConn(l.network, localInbox, message.Reply)
+	return newConn(l.conn, localInbox, message.Reply)
 }
 
 func (l *listener) Close() error {
+	if l.subscription != nil {
+		if err := l.subscription.Unsubscribe(); err != nil {
+			return err
+		}
+		l.subscription = nil
+	}
 	return nil
 }
 
 func (l *listener) Addr() net.Addr {
-	return &addr{network: l.network, address: l.address}
+	return &addr{net: l.conn.Opts.Name, address: l.address}
 }

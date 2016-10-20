@@ -1,7 +1,6 @@
 package nats
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -9,11 +8,12 @@ import (
 	"time"
 
 	n "github.com/nats-io/nats"
+	"github.com/pkg/errors"
 	"github.com/simia-tech/netx/model"
 )
 
 type conn struct {
-	network     *network
+	conn        *n.Conn
 	localInbox  string
 	remoteInbox string
 
@@ -24,15 +24,44 @@ type conn struct {
 	writeDeadline time.Time
 }
 
-func newConn(network *network, localInbox, remoteInbox string) (*conn, error) {
+func Dial(network, address string) (net.Conn, error) {
+	conn, err := n.Connect(network)
+	if err != nil {
+		return nil, err
+	}
+
+	host, _, err := net.SplitHostPort(address)
+	if err != nil {
+		host = address
+	}
+
+	message, err := conn.Request(host, []byte{}, 2*time.Second)
+	if err != nil {
+		return nil, errors.Wrapf(err, "requesting address from [%s] failed", host)
+	}
+
+	packet, err := receivePacket(message.Data)
+	if err != nil {
+		return nil, err
+	}
+	if packet.Type != model.Packet_ACCEPT {
+		return nil, errors.Errorf("unexpected packet type %s", packet.Type)
+	}
+
+	remoteInbox := string(packet.Payload)
+
+	return newConn(conn, message.Subject, remoteInbox)
+}
+
+func newConn(nc *n.Conn, localInbox, remoteInbox string) (*conn, error) {
 	c := &conn{
-		network:     network,
+		conn:        nc,
 		localInbox:  localInbox,
 		remoteInbox: remoteInbox,
 	}
 
 	dataChan := make(chan []byte)
-	subscription, err := network.conn.Subscribe(localInbox, func(message *n.Msg) {
+	subscription, err := nc.Subscribe(localInbox, func(message *n.Msg) {
 		packet, err := receivePacket(message.Data)
 		if err != nil {
 			log.Println(err)
@@ -104,15 +133,18 @@ func (c *conn) Close() error {
 		return err
 	}
 	c.subscription = nil
+
+	c.conn.Close()
+
 	return nil
 }
 
 func (c *conn) LocalAddr() net.Addr {
-	return &addr{network: c.network, address: c.localInbox}
+	return &addr{net: c.conn.Opts.Name, address: c.localInbox}
 }
 
 func (c *conn) RemoteAddr() net.Addr {
-	return &addr{network: c.network, address: c.remoteInbox}
+	return &addr{net: c.conn.Opts.Name, address: c.remoteInbox}
 }
 
 func (c *conn) SetDeadline(t time.Time) error {
@@ -136,7 +168,7 @@ func (c *conn) String() string {
 }
 
 func (c *conn) sendPacket(t model.Packet_Type, payload []byte) error {
-	return sendPacket(c.network.conn, c.remoteInbox, t, payload)
+	return sendPacket(c.conn, c.remoteInbox, t, payload)
 }
 
 func sendPacket(conn *n.Conn, address string, t model.Packet_Type, payload []byte) error {
