@@ -17,24 +17,24 @@ import (
 func main() {
   listener, _ := netx.Listen("nats://localhost:4222", "echo")
   go func() {
-		conn, _ := listener.Accept()
-		defer conn.Close()
+    conn, _ := listener.Accept()
+    defer conn.Close()
 
-		buffer := make([]byte, 5)
-		conn.Read(buffer)
-		conn.Write(buffer)
-	}()
+    buffer := make([]byte, 5)
+    conn.Read(buffer)
+    conn.Write(buffer)
+  }()
 
-	client, _ := netx.Dial("nats://localhost:4222", "echo")
-	defer client.Close()
+  client, _ := netx.Dial("nats://localhost:4222", "echo")
+  defer client.Close()
 
-	fmt.Fprintf(client, "hello")
+  fmt.Fprintf(client, "hello")
 
-	buffer := make([]byte, 5)
-	client.Read(buffer)
+  buffer := make([]byte, 5)
+  client.Read(buffer)
 
-	fmt.Println(string(buffer))
-	// Output: hello
+  fmt.Println(string(buffer))
+  // Output: hello
 }
 ```
 
@@ -52,21 +52,21 @@ func main() {
   listener, _ := netx.Listen("nats://localhost:4222", "greeter")
 
   mux := &http.ServeMux{}
-	mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello")
-	})
+  mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Hello")
+  })
 
-	server := &http.Server{Handler: mux}
-	go func() {
-		server.Serve(listener)
-	}()
+  server := &http.Server{Handler: mux}
+  go func() {
+    server.Serve(listener)
+  }()
 
-	client := &http.Client{Transport: httpx.NewTransport("nats://localhost:4222")}
-	response, _ := client.Get("http://greeter/hello")
-	defer response.Body.Close()
+  client := &http.Client{Transport: httpx.NewTransport("nats://localhost:4222")}
+  response, _ := client.Get("http://greeter/hello")
+  defer response.Body.Close()
 
-	body, _ := ioutil.ReadAll(response.Body)
-	fmt.Println(string(body))
-	// Output: Hello
+  body, _ := ioutil.ReadAll(response.Body)
+  fmt.Println(string(body))
+  // Output: Hello
 }
 ```
