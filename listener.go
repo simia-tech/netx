@@ -4,15 +4,14 @@ import (
 	"net"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/simia-tech/netx/nats"
 )
 
-func Listen(net, address string) (net.Listener, error) {
+func Listen(network, address string) (net.Listener, error) {
 	switch {
-	case strings.HasPrefix(net, "nats:"):
-		return nats.Listen(net, address)
+	case strings.HasPrefix(network, "nats:"):
+		return nats.Listen(network, address)
 	default:
-		return nil, errors.Errorf("unknown network [%s]", net)
+		return net.Listen(network, address)
 	}
 }

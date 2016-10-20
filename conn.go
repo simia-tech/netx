@@ -4,15 +4,14 @@ import (
 	"net"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/simia-tech/netx/nats"
 )
 
-func Dial(net, address string) (net.Conn, error) {
+func Dial(network, address string) (net.Conn, error) {
 	switch {
-	case strings.HasPrefix(net, "nats:"):
-		return nats.Dial(net, address)
+	case strings.HasPrefix(network, "nats:"):
+		return nats.Dial(network, address)
 	default:
-		return nil, errors.Errorf("unknown network [%s]", net)
+		return net.Dial(network, address)
 	}
 }
