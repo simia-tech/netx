@@ -1,17 +1,21 @@
 package nats
 
 import (
+	"io"
+	"math"
 	"net"
 	"time"
 
 	n "github.com/nats-io/nats"
+	"github.com/pkg/errors"
 
 	"github.com/simia-tech/netx/model"
 )
 
+var endlessTimeout = time.Duration(math.MaxInt64)
+
 type listener struct {
 	conn         *n.Conn
-	address      string
 	subscription *n.Subscription
 }
 
@@ -20,44 +24,54 @@ func Listen(net, address string) (net.Listener, error) {
 	if err != nil {
 		return nil, err
 	}
+	subscription, err := conn.QueueSubscribeSync(address, address)
+	if err != nil {
+		return nil, err
+	}
 	return &listener{
-		conn:    conn,
-		address: address,
+		conn:         conn,
+		subscription: subscription,
 	}, nil
 }
 
 func (l *listener) Accept() (net.Conn, error) {
 	if l.subscription == nil {
-		subscription, err := l.conn.QueueSubscribeSync(l.address, l.address)
-		if err != nil {
-			return nil, err
-		}
-		l.subscription = subscription
+		return nil, io.ErrClosedPipe
 	}
 
-	message, err := l.subscription.NextMsg(100 * time.Second)
+	packet, err := receivePacket(l.subscription, endlessTimeout)
+	if err != nil {
+		return nil, err
+	}
+	if packet.Type != model.Packet_NEW {
+		return nil, errors.Errorf("expected NEW packet, got %s", packet.Type)
+	}
+
+	localInbox := n.NewInbox()
+	c, err := newConn(l.conn, false, localInbox, string(packet.Payload))
 	if err != nil {
 		return nil, err
 	}
 
-	localInbox := n.NewInbox()
-	if err := sendPacket(l.conn, message.Reply, model.Packet_ACCEPT, []byte(localInbox)); err != nil {
+	if err := c.sendPacket(model.Packet_ACCEPT, []byte(localInbox)); err != nil {
 		return nil, err
 	}
 
-	return newConn(l.conn, localInbox, message.Reply)
+	return c, nil
 }
 
 func (l *listener) Close() error {
-	if l.subscription != nil {
-		if err := l.subscription.Unsubscribe(); err != nil {
-			return err
-		}
-		l.subscription = nil
+	if l.subscription == nil {
+		return io.ErrClosedPipe
 	}
+
+	if err := l.subscription.Unsubscribe(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (l *listener) Addr() net.Addr {
-	return &addr{net: l.conn.Opts.Name, address: l.address}
+	return &addr{net: l.conn.Opts.Name, address: l.subscription.Subject}
 }

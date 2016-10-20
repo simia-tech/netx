@@ -4,9 +4,10 @@ package model;
 
 message Packet {
   enum Type {
-    ACCEPT = 0;
-    DATA = 1;
-    CLOSE = 2;
+    NEW = 0;
+    ACCEPT = 1;
+    DATA = 2;
+    CLOSE = 3;
   }
   Type type = 1;
   bytes payload = 2;

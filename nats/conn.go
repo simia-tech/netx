@@ -3,7 +3,6 @@ package nats
 import (
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"time"
 
@@ -13,12 +12,12 @@ import (
 )
 
 type conn struct {
-	conn        *n.Conn
-	localInbox  string
-	remoteInbox string
+	conn          *n.Conn
+	connDedicated bool
+	localInbox    string
+	remoteInbox   string
 
 	subscription *n.Subscription
-	dataChan     chan []byte
 
 	readDeadline  time.Time
 	writeDeadline time.Time
@@ -35,80 +34,59 @@ func Dial(network, address string) (net.Conn, error) {
 		host = address
 	}
 
-	message, err := conn.Request(host, []byte{}, 2*time.Second)
+	localInbox := n.NewInbox()
+	c, err := newConn(conn, true, localInbox, host)
 	if err != nil {
-		return nil, errors.Wrapf(err, "requesting address from [%s] failed", host)
+		return nil, err
 	}
 
-	packet, err := receivePacket(message.Data)
+	if err := c.sendPacket(model.Packet_NEW, []byte(localInbox)); err != nil {
+		return nil, err
+	}
+
+	packet, err := c.receivePacket()
 	if err != nil {
 		return nil, err
 	}
 	if packet.Type != model.Packet_ACCEPT {
-		return nil, errors.Errorf("unexpected packet type %s", packet.Type)
+		return nil, errors.Errorf("expected ACCEPT packet, got %s", packet.Type)
 	}
+	c.remoteInbox = string(packet.Payload)
 
-	remoteInbox := string(packet.Payload)
-
-	return newConn(conn, message.Subject, remoteInbox)
+	return c, nil
 }
 
-func newConn(nc *n.Conn, localInbox, remoteInbox string) (*conn, error) {
-	c := &conn{
-		conn:        nc,
-		localInbox:  localInbox,
-		remoteInbox: remoteInbox,
-	}
-
-	dataChan := make(chan []byte)
-	subscription, err := nc.Subscribe(localInbox, func(message *n.Msg) {
-		packet, err := receivePacket(message.Data)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		switch packet.Type {
-		case model.Packet_DATA:
-			dataChan <- packet.Payload
-		case model.Packet_CLOSE:
-			c.subscription.Unsubscribe()
-			c.subscription = nil
-			close(dataChan)
-		default:
-			log.Printf("unknown packet type %s", packet.Type)
-		}
-	})
+func newConn(nc *n.Conn, connDedicated bool, localInbox, remoteInbox string) (*conn, error) {
+	subscription, err := nc.SubscribeSync(localInbox)
 	if err != nil {
 		return nil, err
 	}
 
-	c.subscription = subscription
-	c.dataChan = dataChan
-
-	return c, nil
+	return &conn{
+		conn:          nc,
+		connDedicated: connDedicated,
+		localInbox:    localInbox,
+		remoteInbox:   remoteInbox,
+		subscription:  subscription,
+	}, nil
 }
 
 func (c *conn) Read(buffer []byte) (int, error) {
 	if c.subscription == nil {
 		return 0, io.ErrClosedPipe
 	}
-	if c.readDeadline.IsZero() {
-		data, ok := <-c.dataChan
-		if !ok {
-			return 0, io.ErrClosedPipe
-		}
-		return copy(buffer, data), nil
-	} else {
-		select {
-		case data, ok := <-c.dataChan:
-			if !ok {
-				return 0, io.ErrClosedPipe
-			}
-			return copy(buffer, data), nil
-		case <-time.After(c.readDeadline.Sub(time.Now())):
-			return 0, errors.New("timeout")
-		}
+
+	packet, err := c.receivePacket()
+	if err != nil {
+		return 0, err
+	}
+	switch packet.Type {
+	case model.Packet_DATA:
+		return copy(buffer, packet.Payload), nil
+	case model.Packet_CLOSE:
+		return 0, io.ErrClosedPipe
+	default:
+		return 0, errors.Errorf("expected DATA packet, got %s", packet.Type)
 	}
 }
 
@@ -116,9 +94,11 @@ func (c *conn) Write(buffer []byte) (int, error) {
 	if c.subscription == nil {
 		return 0, io.ErrClosedPipe
 	}
+
 	if err := c.sendPacket(model.Packet_DATA, buffer); err != nil {
 		return 0, err
 	}
+
 	return len(buffer), nil
 }
 
@@ -134,7 +114,9 @@ func (c *conn) Close() error {
 	}
 	c.subscription = nil
 
-	c.conn.Close()
+	if c.connDedicated {
+		c.conn.Close()
+	}
 
 	return nil
 }
@@ -171,6 +153,14 @@ func (c *conn) sendPacket(t model.Packet_Type, payload []byte) error {
 	return sendPacket(c.conn, c.remoteInbox, t, payload)
 }
 
+func (c *conn) receivePacket() (*model.Packet, error) {
+	if c.readDeadline.IsZero() {
+		return receivePacket(c.subscription, endlessTimeout)
+	} else {
+		return receivePacket(c.subscription, c.readDeadline.Sub(time.Now()))
+	}
+}
+
 func sendPacket(conn *n.Conn, address string, t model.Packet_Type, payload []byte) error {
 	packet := &model.Packet{
 		Type:    t,
@@ -183,12 +173,19 @@ func sendPacket(conn *n.Conn, address string, t model.Packet_Type, payload []byt
 	if err := conn.Publish(address, data); err != nil {
 		return err
 	}
+	if err := conn.Flush(); err != nil {
+		return err
+	}
 	return nil
 }
 
-func receivePacket(data []byte) (*model.Packet, error) {
+func receivePacket(subscription *n.Subscription, timeout time.Duration) (*model.Packet, error) {
+	message, err := subscription.NextMsg(timeout)
+	if err != nil {
+		return nil, err
+	}
 	packet := &model.Packet{}
-	if err := packet.UnmarshalBinary(data); err != nil {
+	if err := packet.UnmarshalBinary(message.Data); err != nil {
 		return nil, err
 	}
 	return packet, nil

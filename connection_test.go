@@ -15,14 +15,16 @@ func TestConnection(t *testing.T) {
 	listener, _ := setUpTestEchoListener(t)
 	defer listener.Close()
 
-	conn, err := netx.Dial(defaultNatsURL, listener.Addr().String())
-	require.NoError(t, err)
-	defer conn.Close()
+	for index := 0; index < 4; index++ {
+		conn, err := netx.Dial(defaultNatsURL, listener.Addr().String())
+		require.NoError(t, err)
 
-	requireWrite(t, conn, []byte("test"))
-	buffer := requireRead(t, conn, 4)
+		requireWrite(t, conn, []byte("test"))
+		buffer := requireRead(t, conn, 4)
+		require.Equal(t, "test", string(buffer))
 
-	assert.Equal(t, "test", string(buffer))
+		require.NoError(t, conn.Close())
+	}
 }
 
 func TestConnectionClientClose(t *testing.T) {
@@ -81,7 +83,7 @@ func TestConnectionReadTimeout(t *testing.T) {
 	buffer := [4]byte{}
 	_, err = conn.Read(buffer[:])
 	require.Error(t, err)
-	assert.Equal(t, err.Error(), "timeout")
+	assert.Equal(t, err.Error(), "nats: timeout")
 }
 
 func BenchmarkConnection(b *testing.B) {

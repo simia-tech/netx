@@ -1,4 +1,4 @@
-package netx_test
+package httpx_test
 
 import (
 	"fmt"

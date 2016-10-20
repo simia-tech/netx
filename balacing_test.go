@@ -16,12 +16,16 @@ func TestBalancing(t *testing.T) {
 	listenerTwo, _ := setUpTestEchoListener(t, address)
 	defer listenerTwo.Close()
 
-	conn, err := netx.Dial(defaultNatsURL, address)
-	require.NoError(t, err)
+	for index := 0; index < 4; index++ {
+		conn, err := netx.Dial(defaultNatsURL, address)
+		require.NoError(t, err)
 
-	requireWrite(t, conn, []byte("test"))
-	buffer := requireRead(t, conn, 4)
-	require.Equal(t, "test", string(buffer))
+		requireWrite(t, conn, []byte("test"))
+		buffer := requireRead(t, conn, 4)
+		require.Equal(t, "test", string(buffer))
+
+		require.NoError(t, conn.Close())
+	}
 }
 
 func BenchmarkBalancing(b *testing.B) {
