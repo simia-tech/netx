@@ -24,9 +24,7 @@ func setUpTestHTTPServer(tb testing.TB) (net.Addr, func()) {
 		fmt.Fprintf(w, "test")
 	})
 
-	server := &http.Server{
-		Handler: mux,
-	}
+	server := &http.Server{Handler: mux}
 	go func() {
 		server.Serve(listener)
 	}()

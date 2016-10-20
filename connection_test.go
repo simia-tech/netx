@@ -1,6 +1,7 @@
 package netx_test
 
 import (
+	"fmt"
 	"io"
 	"testing"
 	"time"
@@ -101,4 +102,27 @@ func BenchmarkConnection(b *testing.B) {
 
 		require.NoError(b, conn.Close())
 	}
+}
+
+func ExampleReadme() {
+	listener, _ := netx.Listen("nats://localhost:4222", "echo")
+	go func() {
+		conn, _ := listener.Accept()
+		defer conn.Close()
+
+		buffer := make([]byte, 5)
+		conn.Read(buffer)
+		conn.Write(buffer)
+	}()
+
+	client, _ := netx.Dial("nats://localhost:4222", "echo")
+	defer client.Close()
+
+	fmt.Fprintf(client, "hello")
+
+	buffer := make([]byte, 5)
+	client.Read(buffer)
+
+	fmt.Println(string(buffer))
+	// Output: hello
 }
