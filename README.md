@@ -1,5 +1,4 @@
-# netx
-Semantic addressing extention for golang's net package
+# netx - Semantic addressing extention for go's net package
 
 This package provides an extention of go stdlib's net package. It provides extended `Listen` and `Dial` methods
 in order to enabled clients and servers for semantic addressing.
