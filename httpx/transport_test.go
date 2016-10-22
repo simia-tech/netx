@@ -13,7 +13,7 @@ import (
 )
 
 func TestHTTP(t *testing.T) {
-	addr, tearDown := setUpTestHTTPServer(t)
+	addr, counter, tearDown := setUpTestHTTPServer(t)
 	defer tearDown()
 
 	client := setUpTestHTTPClient(t)
@@ -26,10 +26,12 @@ func TestHTTP(t *testing.T) {
 	body, err := ioutil.ReadAll(response.Body)
 	require.NoError(t, err)
 	assert.Equal(t, "test", string(body))
+
+	assert.Equal(t, 1, counter())
 }
 
 func BenchmarkHTTPSimpleGet(b *testing.B) {
-	addr, tearDown := setUpTestHTTPServer(b)
+	addr, counter, tearDown := setUpTestHTTPServer(b)
 	defer tearDown()
 
 	client := setUpTestHTTPClient(b)
@@ -44,6 +46,9 @@ func BenchmarkHTTPSimpleGet(b *testing.B) {
 		require.Equal(b, "test", string(body))
 		require.NoError(b, response.Body.Close())
 	}
+	b.StopTimer()
+
+	assert.Equal(b, b.N, counter())
 }
 
 func ExampleNewTransport() {

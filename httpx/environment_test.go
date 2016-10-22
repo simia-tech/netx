@@ -14,17 +14,24 @@ import (
 	"github.com/simia-tech/netx/httpx"
 )
 
-func setUpTestHTTPServer(tb testing.TB) (net.Addr, func()) {
+func setUpTestHTTPServer(tb testing.TB, addresses ...string) (net.Addr, func() int, func()) {
 	network := os.Getenv("NETWORK")
 	if network == "" {
 		tb.Skip("NETWORK is unset")
 	}
 
-	listener, err := netx.Listen(network, n.NewInbox())
+	address := n.NewInbox()
+	if len(addresses) > 0 {
+		address = addresses[0]
+	}
+
+	listener, err := netx.Listen(network, address)
 	require.NoError(tb, err)
 
+	counter := new(int)
 	mux := &http.ServeMux{}
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		*counter++
 		fmt.Fprintf(w, "test")
 	})
 
@@ -33,9 +40,11 @@ func setUpTestHTTPServer(tb testing.TB) (net.Addr, func()) {
 		server.Serve(listener)
 	}()
 
-	return listener.Addr(), func() {
-		require.NoError(tb, listener.Close())
-	}
+	return listener.Addr(), func() int {
+			return *counter
+		}, func() {
+			require.NoError(tb, listener.Close())
+		}
 }
 
 func setUpTestHTTPClient(tb testing.TB) *http.Client {
