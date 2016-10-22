@@ -11,6 +11,7 @@ import (
 
 	"github.com/simia-tech/netx"
 	"github.com/simia-tech/netx/httpx"
+	xxx "github.com/simia-tech/netx/internal/nats"
 )
 
 const defaultNatsURL = "nats://localhost:4222"
@@ -23,6 +24,7 @@ func setUpTestHTTPServer(tb testing.TB) (net.Addr, func()) {
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "test")
 	})
+	xxx.Dial("", "")
 
 	server := &http.Server{Handler: mux}
 	go func() {
