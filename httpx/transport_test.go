@@ -46,7 +46,7 @@ func BenchmarkHTTPSimpleGet(b *testing.B) {
 	}
 }
 
-func ExampleReadme() {
+func ExampleNewTransport() {
 	listener, _ := netx.Listen("nats://localhost:4222", "greeter")
 
 	mux := &http.ServeMux{}

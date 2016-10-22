@@ -17,8 +17,7 @@ func TestConnection(t *testing.T) {
 	defer listener.Close()
 
 	for index := 0; index < 4; index++ {
-		conn, err := netx.Dial(defaultNatsURL, listener.Addr().String())
-		require.NoError(t, err)
+		conn := setUpTestEchoClient(t, listener.Addr().String())
 
 		requireWrite(t, conn, []byte("test"))
 		buffer := requireRead(t, conn, 4)
@@ -32,8 +31,7 @@ func TestConnectionClientClose(t *testing.T) {
 	listener, errChan := setUpTestEchoListener(t)
 	defer listener.Close()
 
-	conn, err := netx.Dial(defaultNatsURL, listener.Addr().String())
-	require.NoError(t, err)
+	conn := setUpTestEchoClient(t, listener.Addr().String())
 
 	require.NoError(t, conn.Close())
 
@@ -44,14 +42,14 @@ func TestConnectionListenerClose(t *testing.T) {
 	listener, _ := setUpTestEchoListener(t)
 	defer listener.Close()
 
-	conn, err := netx.Dial(defaultNatsURL, listener.Addr().String())
-	require.NoError(t, err)
+	conn := setUpTestEchoClient(t, listener.Addr().String())
+	defer conn.Close()
 
 	requireWrite(t, conn, []byte("test"))
 	buffer := requireRead(t, conn, 4)
 	require.Equal(t, "test", string(buffer))
 
-	_, err = conn.Read(buffer[:])
+	_, err := conn.Read(buffer[:])
 	assert.Error(t, err)
 }
 
@@ -59,14 +57,14 @@ func TestConnectionReadAfterClose(t *testing.T) {
 	listener, errChan := setUpTestEchoListener(t)
 	defer listener.Close()
 
-	conn, err := netx.Dial(defaultNatsURL, listener.Addr().String())
-	require.NoError(t, err)
+	conn := setUpTestEchoClient(t, listener.Addr().String())
+	defer conn.Close()
 
 	require.NoError(t, conn.Close())
 	require.Error(t, <-errChan)
 
 	buffer := [4]byte{}
-	_, err = conn.Read(buffer[:])
+	_, err := conn.Read(buffer[:])
 	require.Error(t, err)
 	assert.Equal(t, err, io.ErrClosedPipe)
 }
@@ -75,14 +73,13 @@ func TestConnectionReadTimeout(t *testing.T) {
 	listener, _ := setUpTestEchoListener(t)
 	defer listener.Close()
 
-	conn, err := netx.Dial(defaultNatsURL, listener.Addr().String())
-	require.NoError(t, err)
+	conn := setUpTestEchoClient(t, listener.Addr().String())
 	defer conn.Close()
 
 	require.NoError(t, conn.SetReadDeadline(time.Now().Add(10*time.Millisecond)))
 
 	buffer := [4]byte{}
-	_, err = conn.Read(buffer[:])
+	_, err := conn.Read(buffer[:])
 	require.Error(t, err)
 	assert.Equal(t, err.Error(), "nats: timeout")
 }
@@ -93,8 +90,7 @@ func BenchmarkConnection(b *testing.B) {
 
 	b.ResetTimer()
 	for index := 0; index < b.N; index++ {
-		conn, err := netx.Dial(defaultNatsURL, listener.Addr().String())
-		require.NoError(b, err)
+		conn := setUpTestEchoClient(b, listener.Addr().String())
 
 		requireWrite(b, conn, []byte("test"))
 		buffer := requireRead(b, conn, 4)
@@ -104,7 +100,7 @@ func BenchmarkConnection(b *testing.B) {
 	}
 }
 
-func ExampleReadme() {
+func ExampleListen() {
 	listener, _ := netx.Listen("nats://localhost:4222", "echo")
 	go func() {
 		conn, _ := listener.Accept()

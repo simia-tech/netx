@@ -2,6 +2,7 @@ package netx_test
 
 import (
 	"net"
+	"os"
 	"testing"
 
 	n "github.com/nats-io/nats"
@@ -10,15 +11,18 @@ import (
 	"github.com/simia-tech/netx"
 )
 
-const defaultNatsURL = "nats://localhost:4222"
-
 func setUpTestEchoListener(tb testing.TB, addresses ...string) (net.Listener, chan error) {
+	network := os.Getenv("NETWORK")
+	if network == "" {
+		tb.Skip("NETWORK is unset")
+	}
+
 	address := n.NewInbox()
 	if len(addresses) > 0 {
 		address = addresses[0]
 	}
 
-	listener, err := netx.Listen(defaultNatsURL, address)
+	listener, err := netx.Listen(network, address)
 	require.NoError(tb, err)
 
 	errChan := make(chan error, 1)
@@ -53,4 +57,16 @@ func setUpTestEchoListener(tb testing.TB, addresses ...string) (net.Listener, ch
 	}()
 
 	return listener, errChan
+}
+
+func setUpTestEchoClient(tb testing.TB, address string) net.Conn {
+	network := os.Getenv("NETWORK")
+	if network == "" {
+		tb.Skip("NETWORK is unset")
+	}
+
+	conn, err := netx.Dial(network, address)
+	require.NoError(tb, err)
+
+	return conn
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"testing"
 
 	n "github.com/nats-io/nats"
@@ -11,20 +12,21 @@ import (
 
 	"github.com/simia-tech/netx"
 	"github.com/simia-tech/netx/httpx"
-	xxx "github.com/simia-tech/netx/internal/nats"
 )
 
-const defaultNatsURL = "nats://localhost:4222"
-
 func setUpTestHTTPServer(tb testing.TB) (net.Addr, func()) {
-	listener, err := netx.Listen(defaultNatsURL, n.NewInbox())
+	network := os.Getenv("NETWORK")
+	if network == "" {
+		tb.Skip("NETWORK is unset")
+	}
+
+	listener, err := netx.Listen(network, n.NewInbox())
 	require.NoError(tb, err)
 
 	mux := &http.ServeMux{}
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "test")
 	})
-	xxx.Dial("", "")
 
 	server := &http.Server{Handler: mux}
 	go func() {
@@ -37,6 +39,11 @@ func setUpTestHTTPServer(tb testing.TB) (net.Addr, func()) {
 }
 
 func setUpTestHTTPClient(tb testing.TB) *http.Client {
-	transport := httpx.NewTransport(defaultNatsURL)
+	network := os.Getenv("NETWORK")
+	if network == "" {
+		tb.Skip("NETWORK is unset")
+	}
+
+	transport := httpx.NewTransport(network)
 	return &http.Client{Transport: transport}
 }

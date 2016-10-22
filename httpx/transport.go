@@ -9,6 +9,8 @@ import (
 	"github.com/simia-tech/netx"
 )
 
+// NewTransport returns a new transport instance for a http client. The instance will use
+// netx.Dial to establish a connection.
 func NewTransport(network string) *http.Transport {
 	return &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
