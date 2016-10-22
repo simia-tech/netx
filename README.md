@@ -70,3 +70,14 @@ func main() {
   // Output: Hello
 }
 ```
+
+## Tests
+
+In order to run the tests, type
+
+    go test -v ./...
+
+To test against a local [NATS](http://nats.io) node the environment variables `LISTEN_NETWORK` and `DIAL_NETWORK`
+has be set.
+
+    LISTEN_NETWORK=nats://localhost:4222 DIAL_NETWORK=nats://localhost:4222 go test -v ./...

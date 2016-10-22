@@ -12,9 +12,9 @@ import (
 )
 
 func setUpTestEchoListener(tb testing.TB, addresses ...string) (net.Listener, chan error) {
-	network := os.Getenv("NETWORK")
+	network := os.Getenv("LISTEN_NETWORK")
 	if network == "" {
-		tb.Skip("NETWORK is unset")
+		tb.Skip("LISTEN_NETWORK is unset")
 	}
 
 	address := n.NewInbox()
@@ -60,9 +60,9 @@ func setUpTestEchoListener(tb testing.TB, addresses ...string) (net.Listener, ch
 }
 
 func setUpTestEchoClient(tb testing.TB, address string) net.Conn {
-	network := os.Getenv("NETWORK")
+	network := os.Getenv("DIAL_NETWORK")
 	if network == "" {
-		tb.Skip("NETWORK is unset")
+		tb.Skip("DIAL_NETWORK is unset")
 	}
 
 	conn, err := netx.Dial(network, address)

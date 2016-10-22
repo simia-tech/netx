@@ -15,9 +15,9 @@ import (
 )
 
 func setUpTestHTTPServer(tb testing.TB, addresses ...string) (net.Addr, func() int, func()) {
-	network := os.Getenv("NETWORK")
+	network := os.Getenv("LISTEN_NETWORK")
 	if network == "" {
-		tb.Skip("NETWORK is unset")
+		tb.Skip("LISTEN_NETWORK is unset")
 	}
 
 	address := n.NewInbox()
@@ -48,9 +48,9 @@ func setUpTestHTTPServer(tb testing.TB, addresses ...string) (net.Addr, func() i
 }
 
 func setUpTestHTTPClient(tb testing.TB) *http.Client {
-	network := os.Getenv("NETWORK")
+	network := os.Getenv("DIAL_NETWORK")
 	if network == "" {
-		tb.Skip("NETWORK is unset")
+		tb.Skip("DIAL_NETWORK is unset")
 	}
 
 	transport := httpx.NewTransport(network)
