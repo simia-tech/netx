@@ -6,13 +6,14 @@ import (
 	"net/http"
 	"testing"
 
-	n "github.com/nats-io/nats"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/simia-tech/netx"
 )
 
 func TestHTTPBalancing(t *testing.T) {
-	address := n.NewInbox()
+	address := netx.RandomAddress("http-")
 
 	_, counterOne, tearDownOne := setUpTestHTTPServer(t, address)
 	defer tearDownOne()
@@ -37,7 +38,7 @@ func TestHTTPBalancing(t *testing.T) {
 }
 
 func BenchmarkHTTPBalancing(b *testing.B) {
-	address := n.NewInbox()
+	address := netx.RandomAddress("http-")
 
 	_, counterOne, tearDownOne := setUpTestHTTPServer(b, address)
 	defer tearDownOne()

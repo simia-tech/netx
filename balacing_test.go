@@ -3,12 +3,12 @@ package netx_test
 import (
 	"testing"
 
-	n "github.com/nats-io/nats"
+	"github.com/simia-tech/netx"
 	"github.com/stretchr/testify/require"
 )
 
 func TestBalancing(t *testing.T) {
-	address := n.NewInbox()
+	address := netx.RandomAddress("echo-")
 
 	listenerOne, _ := setUpTestEchoListener(t, address)
 	defer listenerOne.Close()
@@ -27,7 +27,7 @@ func TestBalancing(t *testing.T) {
 }
 
 func BenchmarkBalancing(b *testing.B) {
-	address := n.NewInbox()
+	address := netx.RandomAddress("echo-")
 
 	listenerOne, _ := setUpTestEchoListener(b, address)
 	defer listenerOne.Close()

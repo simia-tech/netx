@@ -7,7 +7,6 @@ import (
 	"os"
 	"testing"
 
-	n "github.com/nats-io/nats"
 	"github.com/stretchr/testify/require"
 
 	"github.com/simia-tech/netx"
@@ -20,7 +19,7 @@ func setUpTestHTTPServer(tb testing.TB, addresses ...string) (net.Addr, func() i
 		tb.Skip("LISTEN_NETWORK is unset")
 	}
 
-	address := n.NewInbox()
+	address := netx.RandomAddress("http-")
 	if len(addresses) > 0 {
 		address = addresses[0]
 	}

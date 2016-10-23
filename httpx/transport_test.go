@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/simia-tech/netx"
-	"github.com/simia-tech/netx/httpx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -51,24 +49,24 @@ func BenchmarkHTTPSimpleGet(b *testing.B) {
 	assert.Equal(b, b.N, counter())
 }
 
-func ExampleNewTransport() {
-	listener, _ := netx.Listen("nats://localhost:4222", "greeter")
-
-	mux := &http.ServeMux{}
-	mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello")
-	})
-
-	server := &http.Server{Handler: mux}
-	go func() {
-		server.Serve(listener)
-	}()
-
-	client := &http.Client{Transport: httpx.NewTransport("nats://localhost:4222")}
-	response, _ := client.Get("http://greeter/hello")
-	defer response.Body.Close()
-
-	body, _ := ioutil.ReadAll(response.Body)
-	fmt.Println(string(body))
-	// Output: Hello
-}
+// func ExampleNewTransport() {
+// 	listener, _ := netx.Listen("nats://localhost:4222", "greeter")
+//
+// 	mux := &http.ServeMux{}
+// 	mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+// 		fmt.Fprintf(w, "Hello")
+// 	})
+//
+// 	server := &http.Server{Handler: mux}
+// 	go func() {
+// 		server.Serve(listener)
+// 	}()
+//
+// 	client := &http.Client{Transport: httpx.NewTransport("nats://localhost:4222")}
+// 	response, _ := client.Get("http://greeter/hello")
+// 	defer response.Body.Close()
+//
+// 	body, _ := ioutil.ReadAll(response.Body)
+// 	fmt.Println(string(body))
+// 	// Output: Hello
+// }
