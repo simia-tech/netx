@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/simia-tech/netx/internal/consul"
+	"github.com/simia-tech/netx/internal/dnssrv"
 	"github.com/simia-tech/netx/internal/nats"
 )
 
@@ -15,6 +16,8 @@ func Dial(network, address string) (net.Conn, error) {
 		return nats.Dial(network, address)
 	case strings.HasPrefix(network, "consul:"):
 		return consul.Dial(network, address)
+	case strings.HasPrefix(network, "dnssrv:"):
+		return dnssrv.Dial(network, address)
 	default:
 		return net.Dial(network, address)
 	}
