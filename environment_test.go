@@ -33,20 +33,8 @@ func setUpTestEchoListener(tb testing.TB, addresses ...string) (net.Listener, ch
 				return
 			}
 
-			buffer := [4]byte{}
-			n, err := conn.Read(buffer[:])
-			if err != nil {
-				errChan <- err
-				return
-			}
-			require.Equal(tb, len(buffer), n)
-
-			n, err = conn.Write(buffer[:])
-			if err != nil {
-				errChan <- err
-				return
-			}
-			require.Equal(tb, len(buffer), n)
+			data := requireRead(tb, conn)
+			requireWrite(tb, conn, data)
 
 			if err := conn.Close(); err != nil {
 				errChan <- err

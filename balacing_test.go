@@ -19,7 +19,7 @@ func TestBalancing(t *testing.T) {
 		conn := setUpTestEchoClient(t, address)
 
 		requireWrite(t, conn, []byte("test"))
-		buffer := requireRead(t, conn, 4)
+		buffer := requireRead(t, conn)
 		require.Equal(t, "test", string(buffer))
 
 		require.NoError(t, conn.Close())
@@ -39,7 +39,7 @@ func BenchmarkBalancing(b *testing.B) {
 		conn := setUpTestEchoClient(b, address)
 
 		requireWrite(b, conn, []byte("test"))
-		buffer := requireRead(b, conn, 4)
+		buffer := requireRead(b, conn)
 		require.Equal(b, "test", string(buffer))
 
 		require.NoError(b, conn.Close())

@@ -17,8 +17,7 @@ func TestConnection(t *testing.T) {
 		conn := setUpTestEchoClient(t, listener.Addr().String())
 
 		requireWrite(t, conn, []byte("test"))
-		buffer := requireRead(t, conn, 4)
-		require.Equal(t, "test", string(buffer))
+		assert.Equal(t, "test", string(requireRead(t, conn)))
 
 		require.NoError(t, conn.Close())
 	}
@@ -43,7 +42,7 @@ func TestConnectionListenerClose(t *testing.T) {
 	defer conn.Close()
 
 	requireWrite(t, conn, []byte("test"))
-	buffer := requireRead(t, conn, 4)
+	buffer := requireRead(t, conn)
 	require.Equal(t, "test", string(buffer))
 
 	_, err := conn.Read(buffer[:])
@@ -90,7 +89,7 @@ func BenchmarkConnection(b *testing.B) {
 		conn := setUpTestEchoClient(b, listener.Addr().String())
 
 		requireWrite(b, conn, []byte("test"))
-		buffer := requireRead(b, conn, 4)
+		buffer := requireRead(b, conn)
 		require.Equal(b, "test", string(buffer))
 
 		require.NoError(b, conn.Close())
