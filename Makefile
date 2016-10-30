@@ -1,6 +1,9 @@
 
 GO ?= go
 
+default:
+	$(GO) test -v ./...
+
 test-nats:
 	LISTEN_NETWORK=nats://localhost:4222 DIAL_NETWORK=nats://localhost:4222 $(GO) test -v ./...
 
