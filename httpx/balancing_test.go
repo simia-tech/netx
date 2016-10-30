@@ -3,7 +3,6 @@ package httpx_test
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"testing"
 
@@ -35,7 +34,6 @@ func TestHTTPBalancing(t *testing.T) {
 		assert.Equal(t, "test", string(body))
 	}
 
-	log.Printf("counter %d / %d", counterOne(), counterTwo())
 	assert.True(t, counterOne() > 0)
 	assert.True(t, counterTwo() > 0)
 	assert.Equal(t, 10, counterOne()+counterTwo())

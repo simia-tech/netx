@@ -11,6 +11,8 @@ import (
 	"github.com/simia-tech/netx/model"
 )
 
+const maxPacketSize = 512
+
 type conn struct {
 	conn          *n.Conn
 	connDedicated bool
@@ -91,16 +93,26 @@ func (c *conn) Read(buffer []byte) (int, error) {
 	}
 }
 
-func (c *conn) Write(buffer []byte) (int, error) {
+func (c *conn) Write(data []byte) (int, error) {
 	if c.subscription == nil {
 		return 0, io.ErrClosedPipe
 	}
 
-	if err := c.sendPacket(model.Packet_DATA, buffer); err != nil {
-		return 0, err
+	total := 0
+	for len(data) > maxPacketSize {
+		if err := c.sendPacket(model.Packet_DATA, data[:maxPacketSize]); err != nil {
+			return total, err
+		}
+		data = data[maxPacketSize:]
+		total += maxPacketSize
 	}
 
-	return len(buffer), nil
+	if err := c.sendPacket(model.Packet_DATA, data); err != nil {
+		return 0, err
+	}
+	total += len(data)
+
+	return total, nil
 }
 
 func (c *conn) Close() error {

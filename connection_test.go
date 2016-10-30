@@ -1,6 +1,7 @@
 package netx_test
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 	"time"
@@ -78,6 +79,20 @@ func TestConnectionReadTimeout(t *testing.T) {
 	_, err := conn.Read(buffer[:])
 	require.Error(t, err)
 	assert.True(t, strings.HasSuffix(err.Error(), "timeout"))
+}
+
+func TestConnectionLargeTransfer(t *testing.T) {
+	listener, _ := setUpTestEchoListener(t)
+	defer listener.Close()
+
+	conn := setUpTestEchoClient(t, listener.Addr().String())
+	defer conn.Close()
+
+	data := make([]byte, 10000)
+	requireWrite(t, conn, data)
+	reply := requireRead(t, conn)
+
+	assert.True(t, bytes.Equal(data, reply))
 }
 
 func BenchmarkConnection(b *testing.B) {

@@ -1,6 +1,7 @@
 package netx_test
 
 import (
+	"bytes"
 	"encoding/binary"
 	"io"
 	"io/ioutil"
@@ -11,7 +12,7 @@ import (
 )
 
 func readBlock(r io.Reader) ([]byte, error) {
-	length := uint16(0)
+	length := uint32(0)
 	if err := binary.Read(r, binary.BigEndian, &length); err != nil {
 		return nil, err
 	}
@@ -25,16 +26,16 @@ func readBlock(r io.Reader) ([]byte, error) {
 }
 
 func writeBlock(w io.Writer, data []byte) error {
-	length := uint16(len(data))
+	length := uint32(len(data))
 	if err := binary.Write(w, binary.BigEndian, &length); err != nil {
 		return err
 	}
 
-	n, err := w.Write(data)
+	n, err := io.Copy(w, bytes.NewBuffer(data))
 	if err != nil {
 		return err
 	}
-	if n != len(data) {
+	if n != int64(len(data)) {
 		return errors.Errorf("not all data was written (%d of %d bytes)", n, len(data))
 	}
 
