@@ -33,8 +33,15 @@ func setUpTestEchoListener(tb testing.TB, addresses ...string) (net.Listener, ch
 				return
 			}
 
-			data := requireRead(tb, conn)
-			requireWrite(tb, conn, data)
+			data, err := readBlock(conn)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			if err := writeBlock(conn, data); err != nil {
+				errChan <- err
+				return
+			}
 
 			if err := conn.Close(); err != nil {
 				errChan <- err

@@ -23,6 +23,7 @@ type conn struct {
 	writeDeadline time.Time
 }
 
+// Dial establishes a connection to the provided address on the provided network.
 func Dial(network, address string) (net.Conn, error) {
 	conn, err := n.Connect(network)
 	if err != nil {
@@ -40,7 +41,7 @@ func Dial(network, address string) (net.Conn, error) {
 		return nil, err
 	}
 
-	if err := c.sendPacket(model.Packet_NEW, []byte(localInbox)); err != nil {
+	if err = c.sendPacket(model.Packet_NEW, []byte(localInbox)); err != nil {
 		return nil, err
 	}
 
@@ -73,7 +74,7 @@ func newConn(nc *n.Conn, connDedicated bool, localInbox, remoteInbox string) (*c
 
 func (c *conn) Read(buffer []byte) (int, error) {
 	if c.subscription == nil {
-		return 0, io.ErrClosedPipe
+		return 0, io.EOF
 	}
 
 	packet, err := c.receivePacket()
@@ -84,7 +85,7 @@ func (c *conn) Read(buffer []byte) (int, error) {
 	case model.Packet_DATA:
 		return copy(buffer, packet.Payload), nil
 	case model.Packet_CLOSE:
-		return 0, io.ErrClosedPipe
+		return 0, io.EOF
 	default:
 		return 0, errors.Errorf("expected DATA packet, got %s", packet.Type)
 	}
@@ -156,9 +157,8 @@ func (c *conn) sendPacket(t model.Packet_Type, payload []byte) error {
 func (c *conn) receivePacket() (*model.Packet, error) {
 	if c.readDeadline.IsZero() {
 		return receivePacket(c.subscription, endlessTimeout)
-	} else {
-		return receivePacket(c.subscription, c.readDeadline.Sub(time.Now()))
 	}
+	return receivePacket(c.subscription, c.readDeadline.Sub(time.Now()))
 }
 
 func sendPacket(conn *n.Conn, address string, t model.Packet_Type, payload []byte) error {

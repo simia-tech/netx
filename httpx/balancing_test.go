@@ -3,6 +3,7 @@ package httpx_test
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"testing"
 
@@ -20,9 +21,9 @@ func TestHTTPBalancing(t *testing.T) {
 	_, counterTwo, tearDownTwo := setUpTestHTTPServer(t, address)
 	defer tearDownTwo()
 
-	client := setUpTestHTTPClient(t)
+	for index := 0; index < 10; index++ {
+		client := setUpTestHTTPClient(t)
 
-	for index := 0; index < 4; index++ {
 		response, err := client.Get(fmt.Sprintf("http://%s/test", address))
 		require.NoError(t, err)
 		require.Equal(t, http.StatusOK, response.StatusCode)
@@ -34,7 +35,10 @@ func TestHTTPBalancing(t *testing.T) {
 		assert.Equal(t, "test", string(body))
 	}
 
-	assert.Equal(t, 4, counterOne()+counterTwo())
+	log.Printf("counter %d / %d", counterOne(), counterTwo())
+	assert.True(t, counterOne() > 0)
+	assert.True(t, counterTwo() > 0)
+	assert.Equal(t, 10, counterOne()+counterTwo())
 }
 
 func BenchmarkHTTPBalancing(b *testing.B) {

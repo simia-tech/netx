@@ -19,6 +19,7 @@ type listener struct {
 	subscription *n.Subscription
 }
 
+// Listen starts a listener at the provided address on the provided network.
 func Listen(net, address string) (net.Listener, error) {
 	conn, err := n.Connect(net)
 	if err != nil {
