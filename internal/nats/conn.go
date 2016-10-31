@@ -11,7 +11,7 @@ import (
 	"github.com/simia-tech/netx/model"
 )
 
-const maxPacketSize = 512
+const overheadSize = 100
 
 type conn struct {
 	conn          *n.Conn
@@ -23,6 +23,9 @@ type conn struct {
 
 	readDeadline  time.Time
 	writeDeadline time.Time
+
+	readBuffer    []byte
+	maxPacketSize int
 }
 
 // Dial establishes a connection to the provided address on the provided network.
@@ -71,10 +74,21 @@ func newConn(nc *n.Conn, connDedicated bool, localInbox, remoteInbox string) (*c
 		localInbox:    localInbox,
 		remoteInbox:   remoteInbox,
 		subscription:  subscription,
+		maxPacketSize: int(nc.MaxPayload() - overheadSize),
 	}, nil
 }
 
-func (c *conn) Read(buffer []byte) (int, error) {
+func (c *conn) Read(readBuffer []byte) (int, error) {
+	if len(c.readBuffer) > 0 {
+		n := copy(readBuffer, c.readBuffer)
+		if n < len(c.readBuffer) {
+			c.readBuffer = c.readBuffer[n:]
+		} else {
+			c.readBuffer = nil
+		}
+		return n, nil
+	}
+
 	if c.subscription == nil {
 		return 0, io.EOF
 	}
@@ -85,7 +99,11 @@ func (c *conn) Read(buffer []byte) (int, error) {
 	}
 	switch packet.Type {
 	case model.Packet_DATA:
-		return copy(buffer, packet.Payload), nil
+		n := copy(readBuffer, packet.Payload)
+		if n < len(packet.Payload) {
+			c.readBuffer = packet.Payload[n:]
+		}
+		return n, nil
 	case model.Packet_CLOSE:
 		return 0, io.EOF
 	default:
@@ -99,12 +117,12 @@ func (c *conn) Write(data []byte) (int, error) {
 	}
 
 	total := 0
-	for len(data) > maxPacketSize {
-		if err := c.sendPacket(model.Packet_DATA, data[:maxPacketSize]); err != nil {
+	for len(data) > c.maxPacketSize {
+		if err := c.sendPacket(model.Packet_DATA, data[:c.maxPacketSize]); err != nil {
 			return total, err
 		}
-		data = data[maxPacketSize:]
-		total += maxPacketSize
+		data = data[c.maxPacketSize:]
+		total += c.maxPacketSize
 	}
 
 	if err := c.sendPacket(model.Packet_DATA, data); err != nil {

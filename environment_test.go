@@ -1,6 +1,7 @@
 package netx_test
 
 import (
+	"log"
 	"net"
 	"os"
 	"testing"
@@ -35,15 +36,18 @@ func setUpTestEchoListener(tb testing.TB, addresses ...string) (net.Listener, ch
 
 			data, err := readBlock(conn)
 			if err != nil {
+				log.Printf("test echo listener read error: %v", err)
 				errChan <- err
 				return
 			}
 			if err := writeBlock(conn, data); err != nil {
+				log.Printf("test echo listener write error: %v", err)
 				errChan <- err
 				return
 			}
 
 			if err := conn.Close(); err != nil {
+				log.Printf("test echo listener close error: %v", err)
 				errChan <- err
 				return
 			}
