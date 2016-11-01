@@ -2,7 +2,6 @@ package netx
 
 import (
 	"net"
-	"strings"
 
 	"github.com/simia-tech/netx/internal/consul"
 	"github.com/simia-tech/netx/internal/dnssrv"
@@ -10,13 +9,20 @@ import (
 )
 
 // Dial establishs a connection on the provided network to the provided address.
-func Dial(network, address string) (net.Conn, error) {
-	switch {
-	case strings.HasPrefix(network, "nats:"):
-		return nats.Dial(network, address)
-	case strings.HasPrefix(network, "consul:"):
+func Dial(network, address string, options ...Option) (net.Conn, error) {
+	o := &Options{}
+	for _, option := range options {
+		if err := option(o); err != nil {
+			return nil, err
+		}
+	}
+
+	switch network {
+	case "nats":
+		return nats.Dial(address, o.nodes)
+	case "consul":
 		return consul.Dial(network, address)
-	case strings.HasPrefix(network, "dnssrv:"):
+	case "dnssrv":
 		return dnssrv.Dial(network, address)
 	default:
 		return net.Dial(network, address)

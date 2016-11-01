@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strings"
 	"time"
 
 	n "github.com/nats-io/nats"
@@ -29,8 +30,8 @@ type conn struct {
 }
 
 // Dial establishes a connection to the provided address on the provided network.
-func Dial(network, address string) (net.Conn, error) {
-	conn, err := n.Connect(network)
+func Dial(address string, nodes []string) (net.Conn, error) {
+	conn, err := n.Connect(strings.Join(nodes, ","))
 	if err != nil {
 		return nil, err
 	}

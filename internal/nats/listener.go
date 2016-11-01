@@ -4,6 +4,7 @@ import (
 	"io"
 	"math"
 	"net"
+	"strings"
 	"time"
 
 	n "github.com/nats-io/nats"
@@ -20,8 +21,8 @@ type listener struct {
 }
 
 // Listen starts a listener at the provided address on the provided network.
-func Listen(net, address string) (net.Listener, error) {
-	conn, err := n.Connect(net)
+func Listen(address string, nodes []string) (net.Listener, error) {
+	conn, err := n.Connect(strings.Join(nodes, ","))
 	if err != nil {
 		return nil, err
 	}

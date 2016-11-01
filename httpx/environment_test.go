@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -24,7 +25,9 @@ func setUpTestHTTPServer(tb testing.TB, addresses ...string) (net.Addr, func() i
 		address = addresses[0]
 	}
 
-	listener, err := netx.Listen(network, address)
+	nodes := strings.Split(os.Getenv("NODES"), ",")
+
+	listener, err := netx.Listen(network, address, netx.Nodes(nodes))
 	require.NoError(tb, err)
 
 	counter := new(int)
@@ -51,7 +54,8 @@ func setUpTestHTTPClient(tb testing.TB) *http.Client {
 	if network == "" {
 		tb.Skip("DIAL_NETWORK is unset")
 	}
+	nodes := strings.Split(os.Getenv("NODES"), ",")
 
-	transport := httpx.NewTransport(network)
+	transport := httpx.NewTransport(network, netx.Nodes(nodes))
 	return &http.Client{Transport: transport}
 }

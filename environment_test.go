@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -22,7 +23,9 @@ func setUpTestEchoListener(tb testing.TB, addresses ...string) (net.Listener, ch
 		address = addresses[0]
 	}
 
-	listener, err := netx.Listen(network, address)
+	nodes := strings.Split(os.Getenv("NODES"), ",")
+
+	listener, err := netx.Listen(network, address, netx.Nodes(nodes))
 	require.NoError(tb, err)
 
 	errChan := make(chan error, 1)
@@ -63,7 +66,9 @@ func setUpTestEchoClient(tb testing.TB, address string) net.Conn {
 		tb.Skip("DIAL_NETWORK is unset")
 	}
 
-	conn, err := netx.Dial(network, address)
+	nodes := strings.Split(os.Getenv("NODES"), ",")
+
+	conn, err := netx.Dial(network, address, netx.Nodes(nodes))
 	require.NoError(tb, err)
 
 	return conn
