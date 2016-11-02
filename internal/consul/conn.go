@@ -8,8 +8,8 @@ import (
 )
 
 // Dial establishes a connection to the provided address over the provided network.
-func Dial(network, address string) (net.Conn, error) {
-	consul, _, err := newConsulFrom(network)
+func Dial(address string, nodes []string) (net.Conn, error) {
+	consul, err := newConsulFrom(nodes)
 	if err != nil {
 		return nil, err
 	}

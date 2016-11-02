@@ -23,9 +23,10 @@ func setUpTestEchoListener(tb testing.TB, addresses ...string) (net.Listener, ch
 		address = addresses[0]
 	}
 
-	nodes := strings.Split(os.Getenv("NODES"), ",")
+	nodes := strings.Split(os.Getenv("LISTEN_NETWORK_NODES"), ",")
+	localAddress := os.Getenv("LISTEN_LOCAL_ADDRESS")
 
-	listener, err := netx.Listen(network, address, netx.Nodes(nodes))
+	listener, err := netx.Listen(network, address, netx.Nodes(nodes), netx.LocalAddress(localAddress))
 	require.NoError(tb, err)
 
 	errChan := make(chan error, 1)
@@ -66,7 +67,7 @@ func setUpTestEchoClient(tb testing.TB, address string) net.Conn {
 		tb.Skip("DIAL_NETWORK is unset")
 	}
 
-	nodes := strings.Split(os.Getenv("NODES"), ",")
+	nodes := strings.Split(os.Getenv("DIAL_NETWORK_NODES"), ",")
 
 	conn, err := netx.Dial(network, address, netx.Nodes(nodes))
 	require.NoError(tb, err)

@@ -20,7 +20,7 @@ func Listen(network, address string, options ...Option) (net.Listener, error) {
 	case "nats":
 		return nats.Listen(address, o.nodes)
 	case "consul":
-		return consul.Listen(network, address)
+		return consul.Listen(address, o.nodes, o.localAddress)
 	default:
 		return net.Listen(network, address)
 	}

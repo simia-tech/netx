@@ -20,20 +20,13 @@ type consul struct {
 	node    string
 }
 
-func newConsulFrom(network string) (*consul, string, error) {
-	url, err := url.Parse(network)
-	if err != nil {
-		return nil, "", errors.Wrapf(err, "parsing network url [%s] failed", network)
+func newConsulFrom(nodes []string) (*consul, error) {
+	if len(nodes) < 1 {
+		return nil, errors.New("no node specified")
 	}
-
-	localAddress := ":0"
-	if user := url.User; user != nil && user.Username() != "" {
-		localAddress = user.Username()
-		if p, ok := user.Password(); ok {
-			localAddress = fmt.Sprintf("%s:%s", localAddress, p)
-		} else {
-			localAddress = fmt.Sprintf("%s:0", localAddress)
-		}
+	url, err := url.Parse(nodes[0])
+	if err != nil {
+		return nil, errors.Wrapf(err, "parsing network url [%s] failed", nodes[0])
 	}
 
 	node, _ := os.Hostname()
@@ -44,7 +37,7 @@ func newConsulFrom(network string) (*consul, string, error) {
 	return &consul{
 		address: url.Host,
 		node:    node,
-	}, localAddress, nil
+	}, nil
 }
 
 func (c *consul) register(name string, addr net.Addr) (string, error) {

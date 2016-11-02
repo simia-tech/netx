@@ -1,12 +1,11 @@
 package consul
 
 type addr struct {
-	network string
 	address string
 }
 
 func (a *addr) Network() string {
-	return a.network
+	return "consul"
 }
 
 func (a *addr) String() string {

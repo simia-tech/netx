@@ -21,9 +21,9 @@ func Dial(network, address string, options ...Option) (net.Conn, error) {
 	case "nats":
 		return nats.Dial(address, o.nodes)
 	case "consul":
-		return consul.Dial(network, address)
+		return consul.Dial(address, o.nodes)
 	case "dnssrv":
-		return dnssrv.Dial(network, address)
+		return dnssrv.Dial(address, o.nodes)
 	default:
 		return net.Dial(network, address)
 	}

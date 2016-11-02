@@ -4,17 +4,15 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
-	"net/url"
 
 	"github.com/miekg/dns"
 	"github.com/pkg/errors"
 )
 
 // Dial establishes a connection to the provided address over the provided network.
-func Dial(network, address string) (net.Conn, error) {
-	url, err := url.Parse(network)
-	if err != nil {
-		return nil, err
+func Dial(address string, nodes []string) (net.Conn, error) {
+	if len(nodes) < 1 {
+		return nil, errors.New("no nodes specified")
 	}
 
 	host, _, err := net.SplitHostPort(address)
@@ -26,7 +24,7 @@ func Dial(network, address string) (net.Conn, error) {
 	request := dns.Msg{}
 	request.SetQuestion(fmt.Sprintf("_%s._tcp.service.consul.", host), dns.TypeSRV)
 
-	response, _, err := client.Exchange(&request, url.Host)
+	response, _, err := client.Exchange(&request, nodes[0])
 	if err != nil {
 		return nil, err
 	}

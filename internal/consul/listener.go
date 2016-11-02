@@ -10,14 +10,13 @@ type listener struct {
 	listener net.Listener
 	consul   *consul
 	id       string
-	network  string
 	address  string
 }
 
 // Listen starts a local tcp listener and registers its address and port under
 // the provided address to the consul instance that is specified in the provided network string.
-func Listen(network, address string) (net.Listener, error) {
-	consul, localAddress, err := newConsulFrom(network)
+func Listen(address string, nodes []string, localAddress string) (net.Listener, error) {
+	consul, err := newConsulFrom(nodes)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +35,6 @@ func Listen(network, address string) (net.Listener, error) {
 		listener: l,
 		consul:   consul,
 		id:       id,
-		network:  network,
 		address:  address,
 	}, nil
 }
@@ -53,5 +51,5 @@ func (l *listener) Close() error {
 }
 
 func (l *listener) Addr() net.Addr {
-	return &addr{network: l.network, address: l.address}
+	return &addr{address: l.address}
 }
