@@ -28,7 +28,7 @@ func setUpTestHTTPServer(tb testing.TB, addresses ...string) (net.Addr, func() i
 	nodes := strings.Split(os.Getenv("LISTEN_NETWORK_NODES"), ",")
 	localAddress := os.Getenv("LISTEN_LOCAL_ADDRESS")
 
-	listener, err := netx.Listen(network, address, netx.Nodes(nodes), netx.LocalAddress(localAddress))
+	listener, err := netx.Listen(network, address, netx.Nodes(nodes...), netx.LocalAddress(localAddress))
 	require.NoError(tb, err)
 
 	counter := new(int)
@@ -57,6 +57,6 @@ func setUpTestHTTPClient(tb testing.TB) *http.Client {
 	}
 	nodes := strings.Split(os.Getenv("DIAL_NETWORK_NODES"), ",")
 
-	transport := httpx.NewTransport(network, netx.Nodes(nodes))
+	transport := httpx.NewTransport(network, netx.Nodes(nodes...))
 	return &http.Client{Transport: transport}
 }

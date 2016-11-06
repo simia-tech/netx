@@ -1,5 +1,7 @@
 # netx - Semantic addressing extention for go's net package
 
+[![GoDoc](https://godoc.org/github.com/Shixzie/analytics?status.svg)](https://godoc.org/github.com/Shixzie/analytics) [![Build Status](https://travis-ci.org/simia-tech/netx.svg?branch=master)](https://travis-ci.org/simia-tech/netx)
+
 This package provides an extention of go stdlib's net package. It provides extended `Listen` and `Dial` methods
 in order to enabled clients and servers for semantic addressing.
 
@@ -15,7 +17,7 @@ import (
 )
 
 func main() {
-  listener, _ := netx.Listen("nats://localhost:4222", "echo")
+  listener, _ := netx.Listen("nats", "echo", netx.Nodes("nats://localhost:4222"))
   go func() {
     conn, _ := listener.Accept()
     defer conn.Close()
@@ -25,7 +27,7 @@ func main() {
     conn.Write(buffer)
   }()
 
-  client, _ := netx.Dial("nats://localhost:4222", "echo")
+  client, _ := netx.Dial("nats", "echo", netx.Nodes("nats://localhost:4222"))
   defer client.Close()
 
   fmt.Fprintf(client, "hello")
@@ -49,7 +51,7 @@ import (
 )
 
 func main() {
-  listener, _ := netx.Listen("nats://localhost:4222", "greeter")
+  listener, _ := netx.Listen("nats", "greeter", netx.Nodes("nats://localhost:4222"))
 
   mux := &http.ServeMux{}
   mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +63,7 @@ func main() {
     server.Serve(listener)
   }()
 
-  client := &http.Client{Transport: httpx.NewTransport("nats://localhost:4222")}
+  client := &http.Client{Transport: httpx.NewTransport("nats", netx.Nodes("nats://localhost:4222"))}
   response, _ := client.Get("http://greeter/hello")
   defer response.Body.Close()
 
@@ -80,4 +82,8 @@ In order to run the tests, type
 To test against a local [NATS](http://nats.io) node the environment variables `LISTEN_NETWORK` and `DIAL_NETWORK`
 has be set.
 
-    LISTEN_NETWORK=nats://localhost:4222 DIAL_NETWORK=nats://localhost:4222 go test -v ./...
+    LISTEN_NETWORK=nats \
+      LISTEN_NETWORK_NODES=nats://localhost:4222 \
+      DIAL_NETWORK=nats \
+      DIAL_NETWORK_NODES=nats://localhost:4222 \
+      go test -v ./...
