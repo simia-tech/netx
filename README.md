@@ -1,6 +1,6 @@
 # netx - Semantic addressing extention for go's net package
 
-[![GoDoc](https://godoc.org/github.com/Shixzie/analytics?status.svg)](https://godoc.org/github.com/Shixzie/analytics) [![Build Status](https://travis-ci.org/simia-tech/netx.svg?branch=master)](https://travis-ci.org/simia-tech/netx)
+[![GoDoc](https://godoc.org/github.com/simia-tech/netx?status.svg)](https://godoc.org/github.com/simia-tech/netx) [![Build Status](https://travis-ci.org/simia-tech/netx.svg?branch=master)](https://travis-ci.org/simia-tech/netx)
 
 This package provides an extention of go stdlib's net package. It provides extended `Listen` and `Dial` methods
 in order to enabled clients and servers for semantic addressing.
