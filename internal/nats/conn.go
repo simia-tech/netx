@@ -1,6 +1,7 @@
 package nats
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
@@ -31,7 +32,7 @@ type conn struct {
 
 // Dial establishes a connection to the provided address on the provided network.
 func Dial(address string, nodes []string) (net.Conn, error) {
-	conn, err := n.Connect(strings.Join(nodes, ","))
+	conn, err := n.Connect(strings.Join(nodes, ","), n.Secure(&tls.Config{MinVersion: tls.VersionTLS12, InsecureSkipVerify: true}))
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,9 @@
 package nats
 
 import (
+	"crypto/tls"
 	"io"
+	"log"
 	"math"
 	"net"
 	"strings"
@@ -22,10 +24,22 @@ type listener struct {
 
 // Listen starts a listener at the provided address on the provided network.
 func Listen(address string, nodes []string) (net.Listener, error) {
-	conn, err := n.Connect(strings.Join(nodes, ","))
+	conn, err := n.Connect(strings.Join(nodes, ","), n.Secure(&tls.Config{MinVersion: tls.VersionTLS12, InsecureSkipVerify: true}))
 	if err != nil {
 		return nil, err
 	}
+	conn.SetDisconnectHandler(func(*n.Conn) {
+		log.Printf("disconnected")
+	})
+	conn.SetReconnectHandler(func(*n.Conn) {
+		log.Printf("reconnected")
+	})
+	conn.SetErrorHandler(func(_ *n.Conn, _ *n.Subscription, err error) {
+		log.Printf("error: %v", err)
+	})
+	conn.SetClosedHandler(func(*n.Conn) {
+		log.Printf("closed")
+	})
 	subscription, err := conn.QueueSubscribeSync(address, address)
 	if err != nil {
 		return nil, err
