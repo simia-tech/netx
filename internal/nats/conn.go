@@ -31,8 +31,12 @@ type conn struct {
 }
 
 // Dial establishes a connection to the provided address on the provided network.
-func Dial(address string, nodes []string) (net.Conn, error) {
-	conn, err := n.Connect(strings.Join(nodes, ","), n.Secure(&tls.Config{MinVersion: tls.VersionTLS12, InsecureSkipVerify: true}))
+func Dial(address string, nodes []string, tlsConfig *tls.Config) (net.Conn, error) {
+	options := []n.Option{}
+	if tlsConfig != nil {
+		options = append(options, n.Secure(tlsConfig))
+	}
+	conn, err := n.Connect(strings.Join(nodes, ","), options...)
 	if err != nil {
 		return nil, err
 	}

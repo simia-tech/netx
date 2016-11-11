@@ -19,7 +19,7 @@ func Dial(network, address string, options ...Option) (net.Conn, error) {
 
 	switch network {
 	case "nats":
-		return nats.Dial(address, o.nodes)
+		return nats.Dial(address, o.nodes, o.tlsConfig)
 	case "consul":
 		return consul.Dial(address, o.nodes)
 	case "dnssrv":
