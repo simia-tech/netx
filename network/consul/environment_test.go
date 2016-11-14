@@ -1,7 +1,6 @@
 package consul_test
 
 import (
-	"log"
 	"net"
 	"testing"
 
@@ -9,6 +8,7 @@ import (
 
 	"github.com/simia-tech/netx"
 	_ "github.com/simia-tech/netx/network/consul"
+	"github.com/simia-tech/netx/test"
 )
 
 func setUpTestEchoListener(tb testing.TB, addresses ...string) (net.Listener, chan error) {
@@ -20,36 +20,7 @@ func setUpTestEchoListener(tb testing.TB, addresses ...string) (net.Listener, ch
 	listener, err := netx.Listen("consul", address, netx.Nodes("http://localhost:8500"), netx.LocalAddress("localhost:0"))
 	require.NoError(tb, err)
 
-	errChan := make(chan error, 1)
-	go func() {
-		for {
-			conn, err := listener.Accept()
-			if err != nil {
-				errChan <- err
-				return
-			}
-
-			data, err := readBlock(conn)
-			if err != nil {
-				log.Printf("test echo listener read error: %v", err)
-				errChan <- err
-				return
-			}
-			if err := writeBlock(conn, data); err != nil {
-				log.Printf("test echo listener write error: %v", err)
-				errChan <- err
-				return
-			}
-
-			if err := conn.Close(); err != nil {
-				log.Printf("test echo listener close error: %v", err)
-				errChan <- err
-				return
-			}
-		}
-	}()
-
-	return listener, errChan
+	return listener, test.EchoServer(listener)
 }
 
 func setUpTestEchoClient(tb testing.TB, address string) net.Conn {

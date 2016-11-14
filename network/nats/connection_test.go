@@ -8,6 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/simia-tech/netx/test"
 )
 
 func TestConnection(t *testing.T) {
@@ -17,8 +19,8 @@ func TestConnection(t *testing.T) {
 	for index := 0; index < 4; index++ {
 		conn := setUpTestEchoClient(t, listener.Addr().String())
 
-		requireWrite(t, conn, []byte("test"))
-		assert.Equal(t, "test", string(requireRead(t, conn)))
+		test.RequireWriteBlock(t, conn, []byte("test"))
+		assert.Equal(t, "test", string(test.RequireReadBlock(t, conn)))
 
 		require.NoError(t, conn.Close())
 	}
@@ -42,8 +44,8 @@ func TestConnectionListenerClose(t *testing.T) {
 	conn := setUpTestEchoClient(t, listener.Addr().String())
 	defer conn.Close()
 
-	requireWrite(t, conn, []byte("test"))
-	buffer := requireRead(t, conn)
+	test.RequireWriteBlock(t, conn, []byte("test"))
+	buffer := test.RequireReadBlock(t, conn)
 	require.Equal(t, "test", string(buffer))
 
 	_, err := conn.Read(buffer[:])
@@ -89,8 +91,8 @@ func TestConnectionLargeTransfer(t *testing.T) {
 	defer conn.Close()
 
 	data := make([]byte, 10000)
-	requireWrite(t, conn, data)
-	reply := requireRead(t, conn)
+	test.RequireWriteBlock(t, conn, data)
+	reply := test.RequireReadBlock(t, conn)
 
 	assert.True(t, bytes.Equal(data, reply))
 }
@@ -103,8 +105,8 @@ func BenchmarkConnection(b *testing.B) {
 	for index := 0; index < b.N; index++ {
 		conn := setUpTestEchoClient(b, listener.Addr().String())
 
-		requireWrite(b, conn, []byte("test"))
-		buffer := requireRead(b, conn)
+		test.RequireWriteBlock(b, conn, []byte("test"))
+		buffer := test.RequireReadBlock(b, conn)
 		require.Equal(b, "test", string(buffer))
 
 		require.NoError(b, conn.Close())

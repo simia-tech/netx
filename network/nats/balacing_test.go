@@ -3,9 +3,11 @@ package nats_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/simia-tech/netx"
+	"github.com/simia-tech/netx/test"
 )
 
 func TestBalancing(t *testing.T) {
@@ -19,9 +21,8 @@ func TestBalancing(t *testing.T) {
 	for index := 0; index < 4; index++ {
 		conn := setUpTestEchoClient(t, address)
 
-		requireWrite(t, conn, []byte("test"))
-		buffer := requireRead(t, conn)
-		require.Equal(t, "test", string(buffer))
+		test.RequireWriteBlock(t, conn, []byte("test"))
+		assert.Equal(t, "test", string(test.RequireReadBlock(t, conn)))
 
 		require.NoError(t, conn.Close())
 	}
@@ -39,9 +40,8 @@ func BenchmarkBalancing(b *testing.B) {
 	for index := 0; index < b.N; index++ {
 		conn := setUpTestEchoClient(b, address)
 
-		requireWrite(b, conn, []byte("test"))
-		buffer := requireRead(b, conn)
-		require.Equal(b, "test", string(buffer))
+		test.RequireWriteBlock(b, conn, []byte("test"))
+		assert.Equal(b, "test", string(test.RequireReadBlock(b, conn)))
 
 		require.NoError(b, conn.Close())
 	}

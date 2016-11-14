@@ -1,4 +1,4 @@
-package consul_test
+package test
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func readBlock(r io.Reader) ([]byte, error) {
+func ReadBlock(r io.Reader) ([]byte, error) {
 	length := uint32(0)
 	if err := binary.Read(r, binary.BigEndian, &length); err != nil {
 		return nil, err
@@ -25,7 +25,7 @@ func readBlock(r io.Reader) ([]byte, error) {
 	return data, nil
 }
 
-func writeBlock(w io.Writer, data []byte) error {
+func WriteBlock(w io.Writer, data []byte) error {
 	length := uint32(len(data))
 	if err := binary.Write(w, binary.BigEndian, &length); err != nil {
 		return err
@@ -42,12 +42,12 @@ func writeBlock(w io.Writer, data []byte) error {
 	return nil
 }
 
-func requireRead(tb testing.TB, r io.Reader) []byte {
-	data, err := readBlock(r)
+func RequireReadBlock(tb testing.TB, r io.Reader) []byte {
+	data, err := ReadBlock(r)
 	require.NoError(tb, err)
 	return data
 }
 
-func requireWrite(tb testing.TB, w io.Writer, data []byte) {
-	require.NoError(tb, writeBlock(w, data))
+func RequireWriteBlock(tb testing.TB, w io.Writer, data []byte) {
+	require.NoError(tb, WriteBlock(w, data))
 }
