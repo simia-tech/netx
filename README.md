@@ -14,6 +14,7 @@ import (
   "fmt"
 
   "github.com/simia-tech/netx"
+  _ "github.com/simia-tech/netx/network/nats"
 )
 
 func main() {
@@ -48,6 +49,7 @@ import (
 
   "github.com/simia-tech/netx"
   "github.com/simia-tech/netx/httpx"
+  _ "github.com/simia-tech/netx/network/nats"
 )
 
 func main() {
@@ -78,12 +80,3 @@ func main() {
 In order to run the tests, type
 
     go test -v ./...
-
-To test against a local [NATS](http://nats.io) node the environment variables `LISTEN_NETWORK` and `DIAL_NETWORK`
-has be set.
-
-    LISTEN_NETWORK=nats \
-      LISTEN_NETWORK_NODES=nats://localhost:4222 \
-      DIAL_NETWORK=nats \
-      DIAL_NETWORK_NODES=nats://localhost:4222 \
-      go test -v ./...

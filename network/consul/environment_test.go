@@ -1,4 +1,4 @@
-package netx_test
+package consul_test
 
 import (
 	"log"
@@ -8,10 +8,16 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/simia-tech/netx"
+	_ "github.com/simia-tech/netx/network/consul"
 )
 
-func setUpTestEchoListener(tb testing.TB, address string) (net.Listener, chan error) {
-	listener, err := netx.Listen("tcp", address)
+func setUpTestEchoListener(tb testing.TB, addresses ...string) (net.Listener, chan error) {
+	address := netx.RandomAddress("echo-")
+	if len(addresses) > 0 {
+		address = addresses[0]
+	}
+
+	listener, err := netx.Listen("consul", address, netx.Nodes("http://localhost:8500"), netx.LocalAddress("localhost:0"))
 	require.NoError(tb, err)
 
 	errChan := make(chan error, 1)
@@ -47,8 +53,7 @@ func setUpTestEchoListener(tb testing.TB, address string) (net.Listener, chan er
 }
 
 func setUpTestEchoClient(tb testing.TB, address string) net.Conn {
-	conn, err := netx.Dial("tcp", address)
+	conn, err := netx.Dial("consul", address, netx.Nodes("http://localhost:8500"))
 	require.NoError(tb, err)
-
 	return conn
 }

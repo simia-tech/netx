@@ -4,18 +4,18 @@ import "crypto/tls"
 
 // Options holds generic options for Listen and Dial functions.
 type Options struct {
-	nodes        []string
-	localAddress string
-	tlsConfig    *tls.Config
+	Nodes        []string
+	LocalAddress string
+	TLSConfig    *tls.Config
 }
 
 // Option defines a generic option.
 type Option func(*Options) error
 
 // Nodes returns an option to set the network nodes.
-func Nodes(nodes ...string) Option {
+func Nodes(values ...string) Option {
 	return func(o *Options) error {
-		o.nodes = nodes
+		o.Nodes = values
 		return nil
 	}
 }
@@ -24,7 +24,7 @@ func Nodes(nodes ...string) Option {
 // to bind a local listener.
 func LocalAddress(value string) Option {
 	return func(o *Options) error {
-		o.localAddress = value
+		o.LocalAddress = value
 		return nil
 	}
 }
@@ -32,7 +32,7 @@ func LocalAddress(value string) Option {
 // TLS returns an option to set the tls configuration.
 func TLS(value *tls.Config) Option {
 	return func(o *Options) error {
-		o.tlsConfig = value
+		o.TLSConfig = value
 		return nil
 	}
 }

@@ -4,6 +4,8 @@ import (
 	"net"
 
 	"github.com/pkg/errors"
+
+	"github.com/simia-tech/netx"
 )
 
 type listener struct {
@@ -13,15 +15,19 @@ type listener struct {
 	address  string
 }
 
+func init() {
+	netx.RegisterListen("consul", Listen)
+}
+
 // Listen starts a local tcp listener and registers its address and port under
-// the provided address to the consul instance that is specified in the provided network string.
-func Listen(address string, nodes []string, localAddress string) (net.Listener, error) {
-	consul, err := newConsulFrom(nodes)
+// the provided address to the consul instance that is specified in the provided options.
+func Listen(address string, options *netx.Options) (net.Listener, error) {
+	consul, err := newConsulFrom(options.Nodes)
 	if err != nil {
 		return nil, err
 	}
 
-	l, err := net.Listen("tcp", localAddress)
+	l, err := net.Listen("tcp", options.LocalAddress)
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,6 @@
 package nats
 
 import (
-	"crypto/tls"
 	"io"
 	"math"
 	"net"
@@ -11,6 +10,7 @@ import (
 	n "github.com/nats-io/nats"
 	"github.com/pkg/errors"
 
+	"github.com/simia-tech/netx"
 	"github.com/simia-tech/netx/model"
 )
 
@@ -21,13 +21,17 @@ type listener struct {
 	subscription *n.Subscription
 }
 
-// Listen starts a listener at the provided address on the provided network.
-func Listen(address string, nodes []string, tlsConfig *tls.Config) (net.Listener, error) {
-	options := []n.Option{}
-	if tlsConfig != nil {
-		options = append(options, n.Secure(tlsConfig))
+func init() {
+	netx.RegisterListen("nats", Listen)
+}
+
+// Listen starts a listener at the provided address on the nats network.
+func Listen(address string, options *netx.Options) (net.Listener, error) {
+	o := []n.Option{}
+	if options.TLSConfig != nil {
+		o = append(o, n.Secure(options.TLSConfig))
 	}
-	conn, err := n.Connect(strings.Join(nodes, ","), options...)
+	conn, err := n.Connect(strings.Join(options.Nodes, ","), o...)
 	if err != nil {
 		return nil, err
 	}

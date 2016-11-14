@@ -1,11 +1,16 @@
 package netx
 
-import (
-	"net"
+import "net"
 
-	"github.com/simia-tech/netx/internal/consul"
-	"github.com/simia-tech/netx/internal/nats"
-)
+var listenFuncs = map[string]ListenFunc{}
+
+// ListenFunc defines the signature of the Listen function.
+type ListenFunc func(string, *Options) (net.Listener, error)
+
+// RegisterListen registers the provided Listen method under the provided network name.
+func RegisterListen(network string, listenFunc ListenFunc) {
+	listenFuncs[network] = listenFunc
+}
 
 // Listen creates a listener on the provided network at the provided address.
 func Listen(network, address string, options ...Option) (net.Listener, error) {
@@ -16,12 +21,9 @@ func Listen(network, address string, options ...Option) (net.Listener, error) {
 		}
 	}
 
-	switch network {
-	case "nats":
-		return nats.Listen(address, o.nodes, o.tlsConfig)
-	case "consul":
-		return consul.Listen(address, o.nodes, o.localAddress)
-	default:
-		return net.Listen(network, address)
+	listenFunc, ok := listenFuncs[network]
+	if ok {
+		return listenFunc(address, o)
 	}
+	return net.Listen(network, address)
 }

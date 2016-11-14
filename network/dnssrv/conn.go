@@ -7,11 +7,17 @@ import (
 
 	"github.com/miekg/dns"
 	"github.com/pkg/errors"
+
+	"github.com/simia-tech/netx"
 )
 
+func init() {
+	netx.RegisterDial("dnssrv", Dial)
+}
+
 // Dial establishes a connection to the provided address over the provided network.
-func Dial(address string, nodes []string) (net.Conn, error) {
-	if len(nodes) < 1 {
+func Dial(address string, options *netx.Options) (net.Conn, error) {
+	if len(options.Nodes) < 1 {
 		return nil, errors.New("no nodes specified")
 	}
 
@@ -24,7 +30,7 @@ func Dial(address string, nodes []string) (net.Conn, error) {
 	request := dns.Msg{}
 	request.SetQuestion(fmt.Sprintf("_%s._tcp.service.consul.", host), dns.TypeSRV)
 
-	response, _, err := client.Exchange(&request, nodes[0])
+	response, _, err := client.Exchange(&request, options.Nodes[0])
 	if err != nil {
 		return nil, err
 	}

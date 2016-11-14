@@ -1,4 +1,4 @@
-package netx_test
+package dnssrv_test
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 )
 
 func TestConnection(t *testing.T) {
-	listener, _ := setUpTestEchoListener(t, "localhost:0")
+	listener, _ := setUpTestEchoListener(t)
 	defer listener.Close()
 
 	for index := 0; index < 4; index++ {
@@ -22,7 +22,7 @@ func TestConnection(t *testing.T) {
 }
 
 func BenchmarkConnection(b *testing.B) {
-	listener, _ := setUpTestEchoListener(b, "localhost:0")
+	listener, _ := setUpTestEchoListener(b)
 	defer listener.Close()
 
 	b.ResetTimer()

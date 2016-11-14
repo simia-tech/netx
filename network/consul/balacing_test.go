@@ -1,10 +1,11 @@
-package netx_test
+package consul_test
 
 import (
 	"testing"
 
-	"github.com/simia-tech/netx"
 	"github.com/stretchr/testify/require"
+
+	"github.com/simia-tech/netx"
 )
 
 func TestBalancing(t *testing.T) {

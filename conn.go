@@ -2,11 +2,17 @@ package netx
 
 import (
 	"net"
-
-	"github.com/simia-tech/netx/internal/consul"
-	"github.com/simia-tech/netx/internal/dnssrv"
-	"github.com/simia-tech/netx/internal/nats"
 )
+
+var dialFuncs = map[string]DialFunc{}
+
+// DialFunc defines the signature of the Dial function.
+type DialFunc func(string, *Options) (net.Conn, error)
+
+// RegisterDial registers the provided Dial method under the provided network name.
+func RegisterDial(network string, dialFunc DialFunc) {
+	dialFuncs[network] = dialFunc
+}
 
 // Dial establishs a connection on the provided network to the provided address.
 func Dial(network, address string, options ...Option) (net.Conn, error) {
@@ -17,14 +23,9 @@ func Dial(network, address string, options ...Option) (net.Conn, error) {
 		}
 	}
 
-	switch network {
-	case "nats":
-		return nats.Dial(address, o.nodes, o.tlsConfig)
-	case "consul":
-		return consul.Dial(address, o.nodes)
-	case "dnssrv":
-		return dnssrv.Dial(address, o.nodes)
-	default:
-		return net.Dial(network, address)
+	dialFunc, ok := dialFuncs[network]
+	if ok {
+		return dialFunc(address, o)
 	}
+	return net.Dial(network, address)
 }

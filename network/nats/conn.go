@@ -1,7 +1,6 @@
 package nats
 
 import (
-	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
@@ -10,6 +9,8 @@ import (
 
 	n "github.com/nats-io/nats"
 	"github.com/pkg/errors"
+
+	"github.com/simia-tech/netx"
 	"github.com/simia-tech/netx/model"
 )
 
@@ -30,13 +31,17 @@ type conn struct {
 	maxPacketSize int
 }
 
+func init() {
+	netx.RegisterDial("nats", Dial)
+}
+
 // Dial establishes a connection to the provided address on the provided network.
-func Dial(address string, nodes []string, tlsConfig *tls.Config) (net.Conn, error) {
-	options := []n.Option{}
-	if tlsConfig != nil {
-		options = append(options, n.Secure(tlsConfig))
+func Dial(address string, options *netx.Options) (net.Conn, error) {
+	o := []n.Option{}
+	if options.TLSConfig != nil {
+		o = append(o, n.Secure(options.TLSConfig))
 	}
-	conn, err := n.Connect(strings.Join(nodes, ","), options...)
+	conn, err := n.Connect(strings.Join(options.Nodes, ","), o...)
 	if err != nil {
 		return nil, err
 	}
