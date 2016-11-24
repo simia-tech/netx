@@ -10,9 +10,9 @@ import (
 
 var options = &test.Options{
 	ListenNetwork: "consul",
-	ListenOptions: []netx.Option{netx.Nodes("http://localhost:8500"), netx.LocalAddress("localhost:0")},
+	ListenOptions: []netx.Option{netx.Nodes("http://127.0.0.1:8500"), netx.LocalAddress(":0")},
 	DialNetwork:   "dnssrv",
-	DialOptions:   []netx.Option{netx.Nodes("localhost:8600")},
+	DialOptions:   []netx.Option{netx.Nodes("127.0.0.1:8600")},
 }
 
 func TestConnection(t *testing.T) {
