@@ -4,6 +4,13 @@ go:
   - 1.7
   - tip
 
+before_install:
+  - wget 'https://releases.hashicorp.com/consul/0.7.1/consul_0.7.1_linux_amd64.zip'
+  - unzip consul_0.7.1_linux_amd64.zip
+  - ./consul --version
+
 install: go get -t ./...
 
-script: go test -v ./...
+script:
+  - ../consul agent -dev
+  - go test -v ./...
