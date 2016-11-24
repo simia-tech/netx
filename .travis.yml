@@ -12,5 +12,5 @@ before_install:
 install: go get -t ./...
 
 script:
-  - ../consul agent -dev
+  - ./consul agent -dev &
   - go test -v ./...
