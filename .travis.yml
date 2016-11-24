@@ -10,12 +10,12 @@ before_install:
   - ./consul --version
   - wget 'https://github.com/nats-io/gnatsd/releases/download/v0.9.4/gnatsd-v0.9.4-linux-amd64.zip'
   - unzip gnatsd-v0.9.4-linux-amd64.zip
-  - ./gnatd -v
+  - ./gnatsd -v
 
 install: go get -t ./...
 
 script:
   - ./consul agent -dev &
-  - ./gnatd -D &
+  - ./gnatsd -D &
   - sleep 1
   - go test -v ./...
