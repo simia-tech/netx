@@ -5,6 +5,14 @@ import (
 	"net"
 )
 
+var DefaultOptions = &Options{
+	Nodes:          []string{},
+	PublicListener: nil,
+	PublicAddress:  "127.0.0.1:0",
+	TLSConfig:      nil,
+	Balancing:      RandomBalancing,
+}
+
 // Options holds generic options for Listen and Dial functions.
 type Options struct {
 	Nodes          []string

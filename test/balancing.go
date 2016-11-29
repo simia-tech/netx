@@ -1,29 +1,42 @@
 package test
 
 import (
+	"math/rand"
 	"testing"
+	"time"
 
+	"github.com/simia-tech/netx"
 	"github.com/stretchr/testify/assert"
 )
 
-// BalancingTest runs a balancing test.
+// BalancingTest runs balancing tests.
 func BalancingTest(t *testing.T, options *Options) {
-	address, counters, close := makeEchoListeners(t, 2, options)
-	defer close()
+	t.Run("Random", func(t *testing.T) {
+		rand.Seed(time.Now().UnixNano())
 
-	makeEchoCalls(t, 4, address, options)
+		options.DialOptions = append(options.DialOptions, netx.Balancing(netx.RandomBalancing))
+		address, counters, close := makeEchoListeners(t, 2, options)
+		defer close()
 
-	assert.Equal(t, 4, sum(counters()))
+		makeEchoCalls(t, 4, address, options)
+
+		assert.Equal(t, 4, sum(counters()))
+	})
 }
 
-// BalancingBenchmark runs a balancing benchmark.
+// BalancingBenchmark runs balancing benchmarks.
 func BalancingBenchmark(b *testing.B, options *Options) {
-	address, counters, close := makeEchoListeners(b, 2, options)
-	defer close()
+	b.Run("Random", func(b *testing.B) {
+		rand.Seed(time.Now().UnixNano())
 
-	b.ResetTimer()
-	makeEchoCalls(b, b.N, address, options)
-	b.StopTimer()
+		options.DialOptions = append(options.DialOptions, netx.Balancing(netx.RandomBalancing))
+		address, counters, close := makeEchoListeners(b, 2, options)
+		defer close()
 
-	assert.Equal(b, b.N, sum(counters()))
+		b.ResetTimer()
+		makeEchoCalls(b, b.N, address, options)
+		b.StopTimer()
+
+		assert.Equal(b, b.N, sum(counters()))
+	})
 }
