@@ -13,13 +13,13 @@ import (
 // ConnectionTest runs a connection test.
 func ConnectionTest(t *testing.T, options *Options) {
 	t.Run("Echo", func(t *testing.T) {
-		listener, _ := makeEchoListener(t, "", options)
+		listener, _, _ := makeEchoListener(t, "", options)
 		defer listener.Close()
 		makeEchoCalls(t, 4, listener.Addr().String(), options)
 	})
 
 	t.Run("ClientClose", func(t *testing.T) {
-		listener, errChan := makeEchoListener(t, "", options)
+		listener, _, errChan := makeEchoListener(t, "", options)
 		defer listener.Close()
 
 		conn := makeEchoConn(t, listener.Addr().String(), options)
@@ -29,7 +29,7 @@ func ConnectionTest(t *testing.T, options *Options) {
 	})
 
 	t.Run("ListenerClose", func(t *testing.T) {
-		listener, _ := makeEchoListener(t, "", options)
+		listener, _, _ := makeEchoListener(t, "", options)
 		defer listener.Close()
 
 		conn := makeEchoConn(t, listener.Addr().String(), options)
@@ -44,7 +44,7 @@ func ConnectionTest(t *testing.T, options *Options) {
 	})
 
 	t.Run("ReadAfterClose", func(t *testing.T) {
-		listener, errChan := makeEchoListener(t, "", options)
+		listener, _, errChan := makeEchoListener(t, "", options)
 		defer listener.Close()
 
 		conn := makeEchoConn(t, listener.Addr().String(), options)
@@ -60,7 +60,7 @@ func ConnectionTest(t *testing.T, options *Options) {
 	})
 
 	t.Run("ReadTimeout", func(t *testing.T) {
-		listener, _ := makeEchoListener(t, "", options)
+		listener, _, _ := makeEchoListener(t, "", options)
 		defer listener.Close()
 
 		conn := makeEchoConn(t, listener.Addr().String(), options)
@@ -75,7 +75,7 @@ func ConnectionTest(t *testing.T, options *Options) {
 	})
 
 	t.Run("LargeTransfer", func(t *testing.T) {
-		listener, _ := makeEchoListener(t, "", options)
+		listener, _, _ := makeEchoListener(t, "", options)
 		defer listener.Close()
 
 		conn := makeEchoConn(t, listener.Addr().String(), options)
@@ -91,7 +91,7 @@ func ConnectionTest(t *testing.T, options *Options) {
 
 // ConnectionBenchmark runs a connection benchmark.
 func ConnectionBenchmark(b *testing.B, options *Options) {
-	address, close := makeEchoListeners(b, 1, options)
+	address, _, close := makeEchoListeners(b, 1, options)
 	defer close()
 	b.ResetTimer()
 	makeEchoCalls(b, b.N, address, options)

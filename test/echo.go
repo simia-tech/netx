@@ -11,23 +11,31 @@ import (
 	"github.com/simia-tech/netx"
 )
 
-func makeEchoListeners(tb testing.TB, n int, options *Options) (string, func()) {
+func makeEchoListeners(tb testing.TB, n int, options *Options) (string, func() []int, func()) {
 	address := netx.RandomAddress("echo-")
 
+	counters := []func() int{}
 	listeners := []net.Listener{}
 	for index := 0; index < n; index++ {
-		listener, _ := makeEchoListener(tb, address, options)
+		listener, counter, _ := makeEchoListener(tb, address, options)
 		listeners = append(listeners, listener)
+		counters = append(counters, counter)
 	}
 
-	return address, func() {
-		for _, listener := range listeners {
-			listener.Close()
+	return address, func() []int {
+			result := []int{}
+			for _, counter := range counters {
+				result = append(result, counter())
+			}
+			return result
+		}, func() {
+			for _, listener := range listeners {
+				listener.Close()
+			}
 		}
-	}
 }
 
-func makeEchoListener(tb testing.TB, address string, options *Options) (net.Listener, chan error) {
+func makeEchoListener(tb testing.TB, address string, options *Options) (net.Listener, func() int, chan error) {
 	if address == "" {
 		if options.ListenAddress == "" {
 			address = netx.RandomAddress("echo-")
@@ -39,6 +47,7 @@ func makeEchoListener(tb testing.TB, address string, options *Options) (net.List
 	listener, err := netx.Listen(options.ListenNetwork, address, options.ListenOptions...)
 	require.NoError(tb, err)
 
+	counter := 0
 	errChan := make(chan error, 1)
 	go func() {
 		for {
@@ -65,10 +74,14 @@ func makeEchoListener(tb testing.TB, address string, options *Options) (net.List
 				errChan <- err
 				return
 			}
+
+			counter++
 		}
 	}()
 
-	return listener, errChan
+	return listener, func() int {
+		return counter
+	}, errChan
 }
 
 func makeEchoCalls(tb testing.TB, n int, address string, options *Options) {

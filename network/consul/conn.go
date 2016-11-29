@@ -3,6 +3,7 @@ package consul
 import (
 	"math/rand"
 	"net"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -29,6 +30,8 @@ func Dial(address string, options *netx.Options) (net.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	rand.Seed(time.Now().UnixNano())
 
 	switch l := len(addrs); l {
 	case 0:
