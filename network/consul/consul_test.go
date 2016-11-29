@@ -10,7 +10,7 @@ import (
 
 var options = &test.Options{
 	ListenNetwork: "consul",
-	ListenOptions: []netx.Option{netx.Nodes("http://localhost:8500"), netx.LocalAddress("localhost:0")},
+	ListenOptions: []netx.Option{netx.Nodes("http://localhost:8500"), netx.PublicAddress("127.0.0.1:0")},
 	DialNetwork:   "consul",
 	DialOptions:   []netx.Option{netx.Nodes("http://localhost:8500")},
 }

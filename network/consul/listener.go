@@ -27,7 +27,7 @@ func Listen(address string, options *netx.Options) (net.Listener, error) {
 		return nil, err
 	}
 
-	l, err := net.Listen("tcp", options.LocalAddress)
+	l, err := net.Listen("tcp", options.PublicAddress)
 	if err != nil {
 		return nil, err
 	}

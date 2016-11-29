@@ -1,12 +1,16 @@
 package netx
 
-import "crypto/tls"
+import (
+	"crypto/tls"
+	"net"
+)
 
 // Options holds generic options for Listen and Dial functions.
 type Options struct {
-	Nodes        []string
-	LocalAddress string
-	TLSConfig    *tls.Config
+	Nodes          []string
+	PublicListener net.Listener
+	PublicAddress  string
+	TLSConfig      *tls.Config
 }
 
 // Option defines a generic option.
@@ -20,11 +24,21 @@ func Nodes(values ...string) Option {
 	}
 }
 
-// LocalAddress returns an option to set the local address that is used
-// to bind a local listener.
-func LocalAddress(value string) Option {
+// PublicListener returns an option to set the public listener. The listener should be bound to a public
+// network interface that can be reached by other nodes. The listener's address might be shared with
+// other nodes.
+func PublicListener(value net.Listener) Option {
 	return func(o *Options) error {
-		o.LocalAddress = value
+		o.PublicListener = value
+		return nil
+	}
+}
+
+// PublicAddress returns an option to set the public address. The address is used to create a public listener
+// unless the PublicListener option is used to set one.
+func PublicAddress(value string) Option {
+	return func(o *Options) error {
+		o.PublicAddress = value
 		return nil
 	}
 }
