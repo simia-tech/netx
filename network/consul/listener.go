@@ -27,9 +27,12 @@ func Listen(address string, options *netx.Options) (net.Listener, error) {
 		return nil, err
 	}
 
-	l, err := net.Listen("tcp", options.PublicAddress)
-	if err != nil {
-		return nil, err
+	l := options.PublicListener
+	if l == nil {
+		l, err = net.Listen("tcp", options.PublicAddress)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	id, err := consul.register(address, l.Addr())
