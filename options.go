@@ -11,6 +11,7 @@ type Options struct {
 	PublicListener net.Listener
 	PublicAddress  string
 	TLSConfig      *tls.Config
+	Balancing      BalancingFn
 }
 
 // Option defines a generic option.
@@ -47,6 +48,14 @@ func PublicAddress(value string) Option {
 func TLS(value *tls.Config) Option {
 	return func(o *Options) error {
 		o.TLSConfig = value
+		return nil
+	}
+}
+
+// Balancing returns an option to set the balancing strategy.
+func Balancing(value BalancingFn) Option {
+	return func(o *Options) error {
+		o.Balancing = value
 		return nil
 	}
 }
