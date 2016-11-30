@@ -17,5 +17,5 @@ install: go get -t ./...
 script:
   - ./consul agent -dev &
   - ./gnatsd-v0.9.4-linux-amd64/gnatsd -D &
-  - sleep 1
+  - sleep 3
   - go test -v ./...
