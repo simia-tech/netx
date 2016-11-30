@@ -35,6 +35,39 @@ func makeEchoListeners(tb testing.TB, n int, options *Options) (string, func() [
 		}
 }
 
+func makeFailingEchoListeners(tb testing.TB, n int, options *Options) (string, func() []int, func(int) error, func()) {
+	address := netx.RandomAddress("echo-")
+
+	counters := []func() int{}
+	listeners := []net.Listener{}
+	publicListeners := []net.Listener{}
+	listenOptions := options.ListenOptions
+	for index := 0; index < n; index++ {
+		publicListener, err := net.Listen("tcp", "127.0.0.1:0")
+		require.NoError(tb, err)
+		publicListeners = append(publicListeners, publicListener)
+
+		options.ListenOptions = append(listenOptions, netx.PublicListener(publicListener))
+		listener, counter, _ := makeEchoListener(tb, address, options)
+		listeners = append(listeners, listener)
+		counters = append(counters, counter)
+	}
+
+	return address, func() []int {
+			result := []int{}
+			for _, counter := range counters {
+				result = append(result, counter())
+			}
+			return result
+		}, func(index int) error {
+			return publicListeners[index].Close()
+		}, func() {
+			for _, listener := range listeners {
+				listener.Close()
+			}
+		}
+}
+
 func makeEchoListener(tb testing.TB, address string, options *Options) (net.Listener, func() int, chan error) {
 	if address == "" {
 		if options.ListenAddress == "" {

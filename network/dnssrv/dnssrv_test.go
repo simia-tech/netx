@@ -19,8 +19,8 @@ func TestConnection(t *testing.T) {
 	test.ConnectionTest(t, options)
 }
 
-func BenchmarkConnection(b *testing.B) {
-	test.ConnectionBenchmark(b, options)
+func TestFailover(t *testing.T) {
+	test.FailoverTest(t, options)
 }
 
 func TestRandomBalancing(t *testing.T) {
@@ -29,6 +29,10 @@ func TestRandomBalancing(t *testing.T) {
 
 func TestRoundRobinBalancing(t *testing.T) {
 	test.RoundRobinBalancingTest(t, options)
+}
+
+func BenchmarkConnection(b *testing.B) {
+	test.ConnectionBenchmark(b, options)
 }
 
 func BenchmarkRandomBalancing(b *testing.B) {

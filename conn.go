@@ -1,6 +1,7 @@
 package netx
 
 import (
+	"log"
 	"net"
 	"sort"
 )
@@ -40,13 +41,20 @@ func DialOne(addrs Addrs, options *Options) (net.Conn, error) {
 		balancer = DefaultOptions.Balancer
 	}
 
-	addr, err := balancer(addrs)
-	if err != nil {
-		return nil, err
-	}
-	if addr == nil {
-		return nil, ErrServiceUnavailable
-	}
+	for {
+		addr, err := balancer(addrs)
+		if err != nil {
+			return nil, err
+		}
+		if addr == nil {
+			return nil, ErrServiceUnavailable
+		}
 
-	return net.Dial(addr.Network(), addr.String())
+		conn, err := net.Dial(addr.Network(), addr.String())
+		if err != nil {
+			log.Printf("error connecting to %s: %v", addr, err)
+			continue
+		}
+		return conn, nil
+	}
 }
