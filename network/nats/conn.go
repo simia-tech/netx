@@ -61,7 +61,15 @@ func Dial(address string, options *netx.Options) (net.Conn, error) {
 		return nil, err
 	}
 
-	packet, err := c.receivePacket()
+	packet := (*model.Packet)(nil)
+	if timeout := options.DialTimeout; timeout == 0 {
+		packet, err = c.receivePacket()
+	} else {
+		packet, err = receivePacket(c.subscription, timeout)
+	}
+	if err == n.ErrTimeout {
+		return nil, netx.ErrServiceUnavailable
+	}
 	if err != nil {
 		return nil, err
 	}

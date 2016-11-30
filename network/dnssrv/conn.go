@@ -54,15 +54,5 @@ func Dial(address string, options *netx.Options) (net.Conn, error) {
 		}
 	}
 
-	b := options.Balancing
-	if b == nil {
-		b = netx.DefaultOptions.Balancing
-	}
-
-	addr, err := b(addrs)
-	if err != nil {
-		return nil, err
-	}
-
-	return net.Dial(addr.Network(), addr.String())
+	return netx.DialOne(addrs, options)
 }

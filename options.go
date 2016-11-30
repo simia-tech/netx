@@ -3,6 +3,7 @@ package netx
 import (
 	"crypto/tls"
 	"net"
+	"time"
 )
 
 var DefaultOptions = &Options{
@@ -10,7 +11,8 @@ var DefaultOptions = &Options{
 	PublicListener: nil,
 	PublicAddress:  "127.0.0.1:0",
 	TLSConfig:      nil,
-	Balancing:      RandomBalancing,
+	Balancer:       RandomBalancer(),
+	DialTimeout:    0,
 }
 
 // Options holds generic options for Listen and Dial functions.
@@ -19,7 +21,8 @@ type Options struct {
 	PublicListener net.Listener
 	PublicAddress  string
 	TLSConfig      *tls.Config
-	Balancing      BalancingFn
+	Balancer       BalancerFn
+	DialTimeout    time.Duration
 }
 
 // Option defines a generic option.
@@ -60,10 +63,18 @@ func TLS(value *tls.Config) Option {
 	}
 }
 
-// Balancing returns an option to set the balancing strategy.
-func Balancing(value BalancingFn) Option {
+// Balancer returns an option to set the balancer.
+func Balancer(value BalancerFn) Option {
 	return func(o *Options) error {
-		o.Balancing = value
+		o.Balancer = value
+		return nil
+	}
+}
+
+// DialTimeout returns on options to set the dial timeout.
+func DialTimeout(value time.Duration) Option {
+	return func(o *Options) error {
+		o.DialTimeout = value
 		return nil
 	}
 }

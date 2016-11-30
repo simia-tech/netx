@@ -2,6 +2,7 @@ package netx
 
 import (
 	"net"
+	"sort"
 )
 
 var dialFuncs = map[string]DialFunc{}
@@ -28,4 +29,24 @@ func Dial(network, address string, options ...Option) (net.Conn, error) {
 		return dialFunc(address, o)
 	}
 	return net.Dial(network, address)
+}
+
+// DialOne dials one of the provided addresses using the provided options.
+func DialOne(addrs Addrs, options *Options) (net.Conn, error) {
+	sort.Sort(addrs)
+
+	balancer := options.Balancer
+	if balancer == nil {
+		balancer = DefaultOptions.Balancer
+	}
+
+	addr, err := balancer(addrs)
+	if err != nil {
+		return nil, err
+	}
+	if addr == nil {
+		return nil, ErrServiceUnavailable
+	}
+
+	return net.Dial(addr.Network(), addr.String())
 }

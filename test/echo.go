@@ -5,7 +5,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 
 	"github.com/simia-tech/netx"
@@ -84,19 +84,35 @@ func makeEchoListener(tb testing.TB, address string, options *Options) (net.List
 	}, errChan
 }
 
-func makeEchoCalls(tb testing.TB, n int, address string, options *Options) {
+func makeEchoCalls(n int, address string, options *Options) error {
 	for index := 0; index < n; index++ {
-		conn := makeEchoConn(tb, address, options)
+		conn, err := makeEchoConn(address, options)
+		if err != nil {
+			return err
+		}
 
-		RequireWriteBlock(tb, conn, []byte("test"))
-		assert.Equal(tb, "test", string(RequireReadBlock(tb, conn)))
+		if err := WriteBlock(conn, []byte("test")); err != nil {
+			return err
+		}
+		bytes, err := ReadBlock(conn)
+		if err != nil {
+			return err
+		}
+		if string(bytes) != "test" {
+			return errors.Errorf("expected \"test\", got \"%s\"", bytes)
+		}
 
-		require.NoError(tb, conn.Close())
+		if err := conn.Close(); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func makeEchoConn(tb testing.TB, address string, options *Options) net.Conn {
+func makeEchoConn(address string, options *Options) (net.Conn, error) {
 	conn, err := netx.Dial(options.DialNetwork, address, options.DialOptions...)
-	require.NoError(tb, err)
-	return conn
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
 }

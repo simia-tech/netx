@@ -23,10 +23,10 @@ func BenchmarkConnection(b *testing.B) {
 	test.ConnectionBenchmark(b, options)
 }
 
-func TestBalancing(t *testing.T) {
-	test.BalancingTest(t, options)
+func TestRandomBalancing(t *testing.T) {
+	test.RandomBalancingTest(t, options)
 }
 
 func BenchmarkBalancing(b *testing.B) {
-	test.BalancingBenchmark(b, options)
+	test.RandomBalancingBenchmark(b, options)
 }
