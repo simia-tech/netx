@@ -1,7 +1,7 @@
 package netx
 
 import (
-	"net"
+	"io"
 
 	"github.com/pkg/errors"
 )
@@ -9,7 +9,7 @@ import (
 var dialMulticastFuncs = map[string]DialMulticastFunc{}
 
 // DialMulticastFunc defines the signature of the Dial function.
-type DialMulticastFunc func(string, *Options) (net.Conn, error)
+type DialMulticastFunc func(string, *Options) (io.WriteCloser, error)
 
 // RegisterDialMulticast registers the provided DialMulticast method under the provided network name.
 func RegisterDialMulticast(network string, dialMulticastFunc DialMulticastFunc) {
@@ -17,7 +17,7 @@ func RegisterDialMulticast(network string, dialMulticastFunc DialMulticastFunc) 
 }
 
 // DialMulticast opens a multicast connection on the provided network to the provided address.
-func DialMulticast(network, address string, options ...Option) (net.Conn, error) {
+func DialMulticast(network, address string, options ...Option) (io.WriteCloser, error) {
 	o := &Options{}
 	for _, option := range options {
 		if err := option(o); err != nil {

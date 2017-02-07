@@ -4,28 +4,24 @@ import "github.com/simia-tech/netx"
 
 // Options holds the test options.
 type Options struct {
-	ListenNetwork          string
-	ListenAddress          string
-	ListenOptions          []netx.Option
-	DialNetwork            string
-	DialOptions            []netx.Option
-	ListenMulticastNetwork string
-	ListenMulticastOptions []netx.Option
-	DialMulticastNetwork   string
-	DialMulticastOptions   []netx.Option
+	ListenNetwork    string
+	ListenAddress    string
+	ListenOptions    []netx.Option
+	DialNetwork      string
+	DialOptions      []netx.Option
+	MulticastNetwork string
+	MulticastOptions []netx.Option
 }
 
 func (o *Options) Clone() *Options {
 	return &Options{
-		ListenNetwork:          o.ListenNetwork,
-		ListenAddress:          o.ListenAddress,
-		ListenOptions:          cloneOptionSlice(o.ListenOptions),
-		DialNetwork:            o.DialNetwork,
-		DialOptions:            cloneOptionSlice(o.DialOptions),
-		ListenMulticastNetwork: o.ListenMulticastNetwork,
-		ListenMulticastOptions: cloneOptionSlice(o.ListenMulticastOptions),
-		DialMulticastNetwork:   o.DialMulticastNetwork,
-		DialMulticastOptions:   cloneOptionSlice(o.DialMulticastOptions),
+		ListenNetwork:    o.ListenNetwork,
+		ListenAddress:    o.ListenAddress,
+		ListenOptions:    cloneOptionSlice(o.ListenOptions),
+		DialNetwork:      o.DialNetwork,
+		DialOptions:      cloneOptionSlice(o.DialOptions),
+		MulticastNetwork: o.MulticastNetwork,
+		MulticastOptions: cloneOptionSlice(o.MulticastOptions),
 	}
 }
 

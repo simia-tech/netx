@@ -9,14 +9,12 @@ import (
 )
 
 var options = &test.Options{
-	ListenNetwork:          "nats",
-	ListenOptions:          []netx.Option{netx.Nodes("nats://localhost:4222")},
-	DialNetwork:            "nats",
-	DialOptions:            []netx.Option{netx.Nodes("nats://localhost:4222")},
-	ListenMulticastNetwork: "nats",
-	ListenMulticastOptions: []netx.Option{netx.Nodes("nats://localhost:4222")},
-	DialMulticastNetwork:   "nats",
-	DialMulticastOptions:   []netx.Option{netx.Nodes("nats://localhost:4222")},
+	ListenNetwork:    "nats",
+	ListenOptions:    []netx.Option{netx.Nodes("nats://localhost:4222")},
+	DialNetwork:      "nats",
+	DialOptions:      []netx.Option{netx.Nodes("nats://localhost:4222")},
+	MulticastNetwork: "nats",
+	MulticastOptions: []netx.Option{netx.Nodes("nats://localhost:4222")},
 }
 
 func TestConnection(t *testing.T) {

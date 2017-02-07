@@ -1,7 +1,7 @@
 package nats
 
 import (
-	"fmt"
+	"io"
 	"net"
 	"strings"
 	"time"
@@ -25,7 +25,7 @@ func init() {
 	netx.RegisterDialMulticast("nats", DialMulticast)
 }
 
-func DialMulticast(address string, options *netx.Options) (net.Conn, error) {
+func DialMulticast(address string, options *netx.Options) (io.WriteCloser, error) {
 	o := []n.Option{}
 	if options.TLSConfig != nil {
 		o = append(o, n.Secure(options.TLSConfig))
@@ -51,10 +51,6 @@ func newMulticastConn(nc *n.Conn, address string) (*multicastConn, error) {
 	}, nil
 }
 
-func (mc *multicastConn) Read(readBuffer []byte) (int, error) {
-	return 0, netx.ErrNotSupported
-}
-
 func (mc *multicastConn) Write(data []byte) (int, error) {
 	total := 0
 	for len(data) > mc.maxPacketSize {
@@ -74,33 +70,8 @@ func (mc *multicastConn) Write(data []byte) (int, error) {
 }
 
 func (mc *multicastConn) Close() error {
+	mc.conn.Close()
 	return nil
-}
-
-func (mc *multicastConn) LocalAddr() net.Addr {
-	return &addr{net: "nats", address: "multi"}
-}
-
-func (mc *multicastConn) RemoteAddr() net.Addr {
-	return &addr{net: "nats", address: mc.address}
-}
-
-func (mc *multicastConn) SetDeadline(t time.Time) error {
-	mc.writeDeadline = t
-	return nil
-}
-
-func (mc *multicastConn) SetReadDeadline(t time.Time) error {
-	return netx.ErrNotSupported
-}
-
-func (mc *multicastConn) SetWriteDeadline(t time.Time) error {
-	mc.writeDeadline = t
-	return nil
-}
-
-func (mc *multicastConn) String() string {
-	return fmt.Sprintf("(%s -> %s)", mc.LocalAddr(), mc.RemoteAddr())
 }
 
 func (mc *multicastConn) sendPacket(t model.Packet_Type, payload []byte) error {

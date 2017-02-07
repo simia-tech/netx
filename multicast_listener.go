@@ -1,7 +1,7 @@
 package netx
 
 import (
-	"net"
+	"io"
 
 	"github.com/pkg/errors"
 )
@@ -9,7 +9,7 @@ import (
 var listenMulticastFuncs = map[string]ListenMulticastFunc{}
 
 // ListenMulticastFunc defines the signature of the ListenMulticast function.
-type ListenMulticastFunc func(string, *Options) (net.Conn, error)
+type ListenMulticastFunc func(string, *Options) (io.ReadCloser, error)
 
 // RegisterListen registers the provided Listen method under the provided network name.
 func RegisterListenMulticast(network string, listenMulticastFunc ListenMulticastFunc) {
@@ -17,7 +17,7 @@ func RegisterListenMulticast(network string, listenMulticastFunc ListenMulticast
 }
 
 // ListenMulticast creates a multicast connection on the provided network at the provided address.
-func ListenMulticast(network, address string, options ...Option) (net.Conn, error) {
+func ListenMulticast(network, address string, options ...Option) (io.ReadCloser, error) {
 	o := &Options{}
 	for _, option := range options {
 		if err := option(o); err != nil {

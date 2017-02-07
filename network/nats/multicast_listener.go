@@ -1,7 +1,6 @@
 package nats
 
 import (
-	"fmt"
 	"io"
 	"net"
 	"strings"
@@ -15,6 +14,7 @@ import (
 )
 
 type multicastListener struct {
+	conn         *n.Conn
 	inbox        string
 	subscription *n.Subscription
 
@@ -27,7 +27,7 @@ func init() {
 	netx.RegisterListenMulticast("nats", ListenMulticast)
 }
 
-func ListenMulticast(address string, options *netx.Options) (net.Conn, error) {
+func ListenMulticast(address string, options *netx.Options) (io.ReadCloser, error) {
 	o := []n.Option{}
 	if options.TLSConfig != nil {
 		o = append(o, n.Secure(options.TLSConfig))
@@ -45,13 +45,14 @@ func ListenMulticast(address string, options *netx.Options) (net.Conn, error) {
 	return newMulticastListener(conn, host)
 }
 
-func newMulticastListener(nc *n.Conn, inbox string) (*multicastListener, error) {
-	subscription, err := nc.SubscribeSync(inbox)
+func newMulticastListener(conn *n.Conn, inbox string) (*multicastListener, error) {
+	subscription, err := conn.SubscribeSync(inbox)
 	if err != nil {
 		return nil, err
 	}
 
 	return &multicastListener{
+		conn:         conn,
 		inbox:        inbox,
 		subscription: subscription,
 	}, nil
@@ -90,38 +91,12 @@ func (ml *multicastListener) Read(readBuffer []byte) (int, error) {
 	}
 }
 
-func (ml *multicastListener) Write(data []byte) (int, error) {
-	return 0, netx.ErrNotSupported
-}
-
 func (ml *multicastListener) Close() error {
+	if err := ml.subscription.Unsubscribe(); err != nil {
+		return err
+	}
+	ml.conn.Close()
 	return nil
-}
-
-func (ml *multicastListener) LocalAddr() net.Addr {
-	return &addr{net: "nats", address: ml.inbox}
-}
-
-func (ml *multicastListener) RemoteAddr() net.Addr {
-	return &addr{net: "nats", address: "multi"}
-}
-
-func (ml *multicastListener) SetDeadline(t time.Time) error {
-	ml.readDeadline = t
-	return nil
-}
-
-func (ml *multicastListener) SetReadDeadline(t time.Time) error {
-	ml.readDeadline = t
-	return nil
-}
-
-func (ml *multicastListener) SetWriteDeadline(t time.Time) error {
-	return netx.ErrNotSupported
-}
-
-func (ml *multicastListener) String() string {
-	return fmt.Sprintf("(%s -> %s)", ml.LocalAddr(), ml.RemoteAddr())
 }
 
 func (ml *multicastListener) receivePacket() (*model.Packet, error) {

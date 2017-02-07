@@ -1,7 +1,6 @@
 package test
 
 import (
-	"bytes"
 	"encoding/binary"
 	"io"
 	"io/ioutil"
@@ -27,15 +26,16 @@ func ReadBlock(r io.Reader) ([]byte, error) {
 
 func WriteBlock(w io.Writer, data []byte) error {
 	length := uint32(len(data))
-	if err := binary.Write(w, binary.BigEndian, &length); err != nil {
-		return err
-	}
 
-	n, err := io.Copy(w, bytes.NewBuffer(data))
+	buffer := make([]byte, len(data)+4)
+	binary.BigEndian.PutUint32(buffer, length)
+	copy(buffer[4:], data)
+
+	n, err := w.Write(buffer)
 	if err != nil {
 		return err
 	}
-	if n != int64(len(data)) {
+	if n != len(buffer) {
 		return errors.Errorf("not all data was written (%d of %d bytes)", n, len(data))
 	}
 
