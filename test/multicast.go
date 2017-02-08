@@ -15,6 +15,9 @@ import (
 func MulticastTest(t *testing.T, options *Options) {
 	t.Run("OneProducerOneConsumer", func(t *testing.T) {
 		address := netx.RandomAddress("multicast-")
+		if options.MulticastRequestAddress != "" {
+			address = options.MulticastRequestAddress
+		}
 
 		conn, err := netx.ListenMulticast(options.MulticastNetwork, address, options.MulticastOptions...)
 		require.NoError(t, err)
@@ -34,7 +37,13 @@ func MulticastTest(t *testing.T, options *Options) {
 
 	t.Run("ManyProducersOneConsumer", func(t *testing.T) {
 		requestAddress := netx.RandomAddress("multicast-request-")
+		if options.MulticastRequestAddress != "" {
+			requestAddress = options.MulticastRequestAddress
+		}
 		responseAddress := netx.RandomAddress("multicast-response-")
+		if options.MulticastResponseAddress != "" {
+			responseAddress = options.MulticastResponseAddress
+		}
 
 		n := 5
 		for index := 0; index < n; index++ {
