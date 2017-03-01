@@ -20,6 +20,9 @@ func RegisterDial(network string, dialFunc DialFunc) {
 func Dial(network, address string, options ...Option) (net.Conn, error) {
 	o := &Options{}
 	for _, option := range options {
+		if option == nil {
+			continue
+		}
 		if err := option(o); err != nil {
 			return nil, err
 		}

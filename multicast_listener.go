@@ -20,6 +20,9 @@ func RegisterListenMulticast(network string, listenMulticastFunc ListenMulticast
 func ListenMulticast(network, address string, options ...Option) (io.ReadCloser, error) {
 	o := &Options{}
 	for _, option := range options {
+		if option == nil {
+			continue
+		}
 		if err := option(o); err != nil {
 			return nil, err
 		}

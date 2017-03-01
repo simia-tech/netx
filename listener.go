@@ -16,6 +16,9 @@ func RegisterListen(network string, listenFunc ListenFunc) {
 func Listen(network, address string, options ...Option) (net.Listener, error) {
 	o := &Options{}
 	for _, option := range options {
+		if option == nil {
+			continue
+		}
 		if err := option(o); err != nil {
 			return nil, err
 		}

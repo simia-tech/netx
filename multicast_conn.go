@@ -20,6 +20,9 @@ func RegisterDialMulticast(network string, dialMulticastFunc DialMulticastFunc) 
 func DialMulticast(network, address string, options ...Option) (io.WriteCloser, error) {
 	o := &Options{}
 	for _, option := range options {
+		if option == nil {
+			continue
+		}
 		if err := option(o); err != nil {
 			return nil, err
 		}
