@@ -5,13 +5,14 @@ language: go
 
 go:
   - 1.7
+  - 1.8
   - tip
 
 before_install:
-  - wget 'http://releases.hashicorp.com/consul/0.7.1/consul_0.7.1_linux_amd64.zip'
+  - wget 'https://releases.hashicorp.com/consul/0.7.1/consul_0.7.1_linux_amd64.zip'
   - unzip consul_0.7.1_linux_amd64.zip
   - ./consul --version
-  - wget 'http://github.com/nats-io/gnatsd/releases/download/v0.9.4/gnatsd-v0.9.4-linux-amd64.zip'
+  - wget 'https://github.com/nats-io/gnatsd/releases/download/v0.9.4/gnatsd-v0.9.4-linux-amd64.zip'
   - unzip gnatsd-v0.9.4-linux-amd64.zip
   - ./gnatsd-v0.9.4-linux-amd64/gnatsd -v
 
