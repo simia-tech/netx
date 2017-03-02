@@ -1,9 +1,8 @@
 package consul
 
 import (
+	"fmt"
 	"net"
-
-	"github.com/pkg/errors"
 
 	"github.com/simia-tech/netx"
 )
@@ -37,7 +36,7 @@ func Listen(address string, options *netx.Options) (net.Listener, error) {
 
 	id, err := consul.register(address, l.Addr())
 	if err != nil {
-		return nil, errors.Wrapf(err, "register local listener address [%s] at consul failed", l.Addr())
+		return nil, fmt.Errorf("register local listener address [%s] at consul failed: %v", l.Addr(), err)
 	}
 
 	return &listener{

@@ -11,8 +11,6 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-
-	"github.com/pkg/errors"
 )
 
 type consul struct {
@@ -22,11 +20,11 @@ type consul struct {
 
 func newConsulFrom(nodes []string) (*consul, error) {
 	if len(nodes) < 1 {
-		return nil, errors.New("no node specified")
+		return nil, fmt.Errorf("no node specified")
 	}
 	url, err := url.Parse(nodes[0])
 	if err != nil {
-		return nil, errors.Wrapf(err, "parsing network url [%s] failed", nodes[0])
+		return nil, fmt.Errorf("parsing network url [%s] failed: %v", nodes[0], err)
 	}
 
 	node, _ := os.Hostname()
@@ -83,7 +81,7 @@ func (c *consul) register(name string, addr net.Addr) (string, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return "", errors.Errorf("expected status code 200, got %d", response.StatusCode)
+		return "", fmt.Errorf("expected status code 200, got %d", response.StatusCode)
 	}
 
 	return id, nil
@@ -112,7 +110,7 @@ func (c *consul) deregister(id string) error {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return errors.Errorf("expected status code 200, got %d", response.StatusCode)
+		return fmt.Errorf("expected status code 200, got %d", response.StatusCode)
 	}
 
 	return nil

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	n "github.com/nats-io/nats"
-	"github.com/pkg/errors"
 
 	"github.com/simia-tech/netx"
 	"github.com/simia-tech/netx/model"
@@ -74,7 +73,7 @@ func Dial(address string, options *netx.Options) (net.Conn, error) {
 		return nil, err
 	}
 	if packet.Type != model.Packet_ACCEPT {
-		return nil, errors.Errorf("expected ACCEPT packet, got %s", packet.Type)
+		return nil, fmt.Errorf("expected ACCEPT packet, got %s", packet.Type)
 	}
 	c.remoteInbox = string(packet.Payload)
 
@@ -126,7 +125,7 @@ func (c *conn) Read(readBuffer []byte) (int, error) {
 	case model.Packet_CLOSE:
 		return 0, io.EOF
 	default:
-		return 0, errors.Errorf("expected DATA packet, got %s", packet.Type)
+		return 0, fmt.Errorf("expected DATA packet, got %s", packet.Type)
 	}
 }
 

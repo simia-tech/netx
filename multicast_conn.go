@@ -1,9 +1,8 @@
 package netx
 
 import (
+	"fmt"
 	"io"
-
-	"github.com/pkg/errors"
 )
 
 var dialMulticastFuncs = map[string]DialMulticastFunc{}
@@ -32,5 +31,5 @@ func DialMulticast(network, address string, options ...Option) (io.WriteCloser, 
 	if ok {
 		return dialMulticastFunc(address, o)
 	}
-	return nil, errors.Errorf("no DialMulticast function registered for network [%s]", network)
+	return nil, fmt.Errorf("no DialMulticast function registered for network [%s]", network)
 }

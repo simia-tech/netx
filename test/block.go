@@ -2,11 +2,11 @@ package test
 
 import (
 	"encoding/binary"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -36,7 +36,7 @@ func WriteBlock(w io.Writer, data []byte) error {
 		return err
 	}
 	if n != len(buffer) {
-		return errors.Errorf("not all data was written (%d of %d bytes)", n, len(data))
+		return fmt.Errorf("not all data was written (%d of %d bytes)", n, len(data))
 	}
 
 	return nil

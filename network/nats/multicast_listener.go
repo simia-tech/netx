@@ -1,13 +1,13 @@
 package nats
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"strings"
 	"time"
 
 	n "github.com/nats-io/nats"
-	"github.com/pkg/errors"
 
 	"github.com/simia-tech/netx"
 	"github.com/simia-tech/netx/model"
@@ -87,7 +87,7 @@ func (ml *multicastListener) Read(readBuffer []byte) (int, error) {
 	case model.Packet_CLOSE:
 		return 0, io.EOF
 	default:
-		return 0, errors.Errorf("expected DATA packet, got %s", packet.Type)
+		return 0, fmt.Errorf("expected DATA packet, got %s", packet.Type)
 	}
 }
 

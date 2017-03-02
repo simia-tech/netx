@@ -1,9 +1,8 @@
 package netx
 
 import (
+	"fmt"
 	"io"
-
-	"github.com/pkg/errors"
 )
 
 var listenMulticastFuncs = map[string]ListenMulticastFunc{}
@@ -11,7 +10,7 @@ var listenMulticastFuncs = map[string]ListenMulticastFunc{}
 // ListenMulticastFunc defines the signature of the ListenMulticast function.
 type ListenMulticastFunc func(string, *Options) (io.ReadCloser, error)
 
-// RegisterListen registers the provided Listen method under the provided network name.
+// RegisterListenMulticast registers the provided Listen method under the provided network name.
 func RegisterListenMulticast(network string, listenMulticastFunc ListenMulticastFunc) {
 	listenMulticastFuncs[network] = listenMulticastFunc
 }
@@ -32,5 +31,5 @@ func ListenMulticast(network, address string, options ...Option) (io.ReadCloser,
 	if ok {
 		return listenMulticastFunc(address, o)
 	}
-	return nil, errors.Errorf("no ListenMulticast function registered for network [%s]", network)
+	return nil, fmt.Errorf("no ListenMulticast function registered for network [%s]", network)
 }

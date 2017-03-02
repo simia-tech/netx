@@ -1,11 +1,11 @@
 package test
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 
 	"github.com/simia-tech/netx"
@@ -132,7 +132,7 @@ func makeEchoCalls(n int, address string, options *Options) error {
 			return err
 		}
 		if string(bytes) != "test" {
-			return errors.Errorf("expected \"test\", got \"%s\"", bytes)
+			return fmt.Errorf("expected \"test\", got \"%s\"", bytes)
 		}
 
 		if err := conn.Close(); err != nil {
