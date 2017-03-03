@@ -15,6 +15,7 @@ func ConnectionTest(t *testing.T, options *Options) {
 	t.Run("Echo", func(t *testing.T) {
 		listener, _, _ := makeEchoListener(t, "", options)
 		defer listener.Close()
+
 		require.NoError(t, makeEchoCalls(4, listener.Addr().String(), options))
 	})
 
