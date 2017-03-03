@@ -121,7 +121,7 @@ func makeEchoCalls(n int, address string, options *Options) error {
 	for index := 0; index < n; index++ {
 		conn, err := makeEchoConn(address, options)
 		if err != nil {
-			return fmt.Errorf("make echo conn: %v", err)
+			return err
 		}
 
 		if err := WriteBlock(conn, []byte("test")); err != nil {
@@ -129,14 +129,14 @@ func makeEchoCalls(n int, address string, options *Options) error {
 		}
 		bytes, err := ReadBlock(conn)
 		if err != nil {
-			return fmt.Errorf("read block: %v", err)
+			return err
 		}
 		if string(bytes) != "test" {
 			return fmt.Errorf("expected \"test\", got \"%s\"", bytes)
 		}
 
 		if err := conn.Close(); err != nil {
-			return fmt.Errorf("conn close: %v", err)
+			return err
 		}
 	}
 	return nil
