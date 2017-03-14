@@ -1,6 +1,9 @@
 package netx
 
-import "net"
+import (
+	"crypto/tls"
+	"net"
+)
 
 var listenFuncs = map[string]ListenFunc{}
 
@@ -28,5 +31,8 @@ func Listen(network, address string, options ...Option) (net.Listener, error) {
 	if ok {
 		return listenFunc(address, o)
 	}
-	return net.Listen(network, address)
+	if o.TLSConfig == nil {
+		return net.Listen(network, address)
+	}
+	return tls.Listen(network, address, o.TLSConfig)
 }

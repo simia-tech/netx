@@ -1,6 +1,7 @@
 package netx
 
 import (
+	"crypto/tls"
 	"log"
 	"net"
 	"sort"
@@ -32,7 +33,10 @@ func Dial(network, address string, options ...Option) (net.Conn, error) {
 	if ok {
 		return dialFunc(address, o)
 	}
-	return net.Dial(network, address)
+	if o.TLSConfig == nil {
+		return net.Dial(network, address)
+	}
+	return tls.Dial(network, address, o.TLSConfig)
 }
 
 // DialOne dials one of the provided addresses using the provided options.
