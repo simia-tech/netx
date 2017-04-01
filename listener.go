@@ -15,6 +15,15 @@ func RegisterListen(network string, listenFunc ListenFunc) {
 	listenFuncs[network] = listenFunc
 }
 
+// RegisteredListenNetworks returns the available networks for the Listen function.
+func RegisteredListenNetworks() []string {
+	networks := []string{}
+	for network := range listenFuncs {
+		networks = append(networks, network)
+	}
+	return networks
+}
+
 // Listen creates a listener on the provided network at the provided address.
 func Listen(network, address string, options ...Option) (net.Listener, error) {
 	o := &Options{}
