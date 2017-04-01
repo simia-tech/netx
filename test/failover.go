@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// FailoverTest runs the failover test suite with the provided options.
 func FailoverTest(t *testing.T, options *Options) {
 	t.Run("OneMissingNode", func(t *testing.T) {
 		address, counters, kill, close := makeKillableListeners(t, 2, echoServer, options.Clone())

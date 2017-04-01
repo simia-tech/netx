@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// ReadBlock reads a data block from the provided reader and returns it.
 func ReadBlock(r io.Reader) ([]byte, error) {
 	length := uint32(0)
 	if err := binary.Read(r, binary.BigEndian, &length); err != nil {
@@ -24,6 +25,7 @@ func ReadBlock(r io.Reader) ([]byte, error) {
 	return data, nil
 }
 
+// WriteBlock writes the provided data to the provided writer.
 func WriteBlock(w io.Writer, data []byte) error {
 	length := uint32(len(data))
 
@@ -42,12 +44,14 @@ func WriteBlock(w io.Writer, data []byte) error {
 	return nil
 }
 
+// RequireReadBlock runs ReadBlock and fails the provided test/brenchmark in case of an error.
 func RequireReadBlock(tb testing.TB, r io.Reader) []byte {
 	data, err := ReadBlock(r)
 	require.NoError(tb, err)
 	return data
 }
 
+// RequireWriteBlock runs WriteBlock and fails the provided test/brenchmark in case of an error.
 func RequireWriteBlock(tb testing.TB, w io.Writer, data []byte) {
 	require.NoError(tb, WriteBlock(w, data))
 }

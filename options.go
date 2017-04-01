@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// DefaultOptions for the Listen and Dial functions.
 var DefaultOptions = &Options{
 	Nodes:          []string{},
 	PublicListener: nil,

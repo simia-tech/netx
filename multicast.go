@@ -7,6 +7,8 @@ type multicast struct {
 	conn     io.WriteCloser
 }
 
+// ListenAndDialMulticast listens to the provided readAddress and dials the provided writeAddress. The result is combined
+// in the returned io.ReadWriteCloser interface.
 func ListenAndDialMulticast(network, readAddress, writeAddress string, options ...Option) (io.ReadWriteCloser, error) {
 	listener, err := ListenMulticast(network, readAddress, options...)
 	if err != nil {
