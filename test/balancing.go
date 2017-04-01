@@ -17,14 +17,14 @@ func RandomBalancingTest(t *testing.T, options *Options) {
 	options.DialOptions = append(options.DialOptions, netx.Balancer(balancer), netx.DialTimeout(100*time.Millisecond))
 
 	t.Run("ZeroNodes", func(t *testing.T) {
-		err := makeEchoCalls(1, "missing", options.Clone())
+		err := makeCalls(1, "missing", echoClient, options.Clone())
 		assert.Equal(t, netx.ErrServiceUnavailable, err)
 	})
 	t.Run("TwoNodes", func(t *testing.T) {
-		address, counters, close := makeEchoListeners(t, 2, options.Clone())
+		address, counters, close := makeListeners(t, 2, echoServer, options.Clone())
 		defer close()
 
-		require.NoError(t, makeEchoCalls(4, address, options.Clone()))
+		require.NoError(t, makeCalls(4, address, echoClient, options.Clone()))
 
 		time.Sleep(100 * time.Millisecond)
 		assert.Equal(t, 4, sum(counters()))
@@ -37,14 +37,14 @@ func RoundRobinBalancingTest(t *testing.T, options *Options) {
 	options.DialOptions = append(options.DialOptions, netx.Balancer(balancer), netx.DialTimeout(100*time.Millisecond))
 
 	t.Run("ZeroNodes", func(t *testing.T) {
-		err := makeEchoCalls(1, "missing", options.Clone())
+		err := makeCalls(1, "missing", echoClient, options.Clone())
 		assert.Equal(t, netx.ErrServiceUnavailable, err)
 	})
 	t.Run("TwoNodes", func(t *testing.T) {
-		address, counters, close := makeEchoListeners(t, 2, options.Clone())
+		address, counters, close := makeListeners(t, 2, echoServer, options.Clone())
 		defer close()
 
-		require.NoError(t, makeEchoCalls(4, address, options.Clone()))
+		require.NoError(t, makeCalls(4, address, echoClient, options.Clone()))
 
 		time.Sleep(100 * time.Millisecond)
 		assert.Equal(t, []int{2, 2}, counters())
@@ -58,11 +58,11 @@ func RandomBalancingBenchmark(b *testing.B, options *Options) {
 	options.DialOptions = append(options.DialOptions, netx.Balancer(balancer), netx.DialTimeout(100*time.Millisecond))
 
 	b.Run("TwoNodes", func(b *testing.B) {
-		address, counters, close := makeEchoListeners(b, 2, options.Clone())
+		address, counters, close := makeListeners(b, 2, echoServer, options.Clone())
 		defer close()
 
 		b.ResetTimer()
-		require.NoError(b, makeEchoCalls(b.N, address, options.Clone()))
+		require.NoError(b, makeCalls(b.N, address, echoClient, options.Clone()))
 		b.StopTimer()
 
 		time.Sleep(100 * time.Millisecond)
@@ -77,11 +77,11 @@ func RoundRobinBalancingBenchmark(b *testing.B, options *Options) {
 	options.DialOptions = append(options.DialOptions, netx.Balancer(balancer), netx.DialTimeout(100*time.Millisecond))
 
 	b.Run("TwoNodes", func(b *testing.B) {
-		address, counters, close := makeEchoListeners(b, 2, options.Clone())
+		address, counters, close := makeListeners(b, 2, echoServer, options.Clone())
 		defer close()
 
 		b.ResetTimer()
-		require.NoError(b, makeEchoCalls(b.N, address, options.Clone()))
+		require.NoError(b, makeCalls(b.N, address, echoClient, options.Clone()))
 		b.StopTimer()
 
 		time.Sleep(100 * time.Millisecond)

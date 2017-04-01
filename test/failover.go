@@ -10,12 +10,12 @@ import (
 
 func FailoverTest(t *testing.T, options *Options) {
 	t.Run("OneMissingNode", func(t *testing.T) {
-		address, counters, kill, close := makeFailingEchoListeners(t, 2, options.Clone())
+		address, counters, kill, close := makeKillableListeners(t, 2, echoServer, options.Clone())
 		defer close()
 
-		require.NoError(t, kill(0))
+		kill(0)
 
-		require.NoError(t, makeEchoCalls(4, address, options))
+		require.NoError(t, makeCalls(4, address, echoClient, options))
 
 		time.Sleep(100 * time.Millisecond)
 		assert.Equal(t, 4, sum(counters()))

@@ -13,17 +13,17 @@ import (
 // ConnectionTest runs a connection test.
 func ConnectionTest(t *testing.T, options *Options) {
 	t.Run("Echo", func(t *testing.T) {
-		listener, _, _ := makeEchoListener(t, "", options)
+		listener, _, _ := makeListener(t, "", echoServer, options)
 		defer listener.Close()
 
-		require.NoError(t, makeEchoCalls(4, listener.Addr().String(), options))
+		require.NoError(t, makeCalls(4, listener.Addr().String(), echoClient, options))
 	})
 
 	t.Run("ClientClose", func(t *testing.T) {
-		listener, _, errChan := makeEchoListener(t, "", options)
+		listener, _, errChan := makeListener(t, "", echoServer, options)
 		defer listener.Close()
 
-		conn, err := makeEchoConn(listener.Addr().String(), options)
+		conn, err := makeConn(listener.Addr().String(), options)
 		require.NoError(t, err)
 
 		require.NoError(t, conn.Close())
@@ -31,10 +31,10 @@ func ConnectionTest(t *testing.T, options *Options) {
 	})
 
 	t.Run("ListenerClose", func(t *testing.T) {
-		listener, _, _ := makeEchoListener(t, "", options)
+		listener, _, _ := makeListener(t, "", echoServer, options)
 		defer listener.Close()
 
-		conn, err := makeEchoConn(listener.Addr().String(), options)
+		conn, err := makeConn(listener.Addr().String(), options)
 		require.NoError(t, err)
 		defer conn.Close()
 
@@ -47,10 +47,10 @@ func ConnectionTest(t *testing.T, options *Options) {
 	})
 
 	t.Run("ReadAfterClose", func(t *testing.T) {
-		listener, _, errChan := makeEchoListener(t, "", options)
+		listener, _, errChan := makeListener(t, "", echoServer, options)
 		defer listener.Close()
 
-		conn, err := makeEchoConn(listener.Addr().String(), options)
+		conn, err := makeConn(listener.Addr().String(), options)
 		require.NoError(t, err)
 		defer conn.Close()
 
@@ -64,10 +64,10 @@ func ConnectionTest(t *testing.T, options *Options) {
 	})
 
 	t.Run("ReadTimeout", func(t *testing.T) {
-		listener, _, _ := makeEchoListener(t, "", options)
+		listener, _, _ := makeListener(t, "", echoServer, options)
 		defer listener.Close()
 
-		conn, err := makeEchoConn(listener.Addr().String(), options)
+		conn, err := makeConn(listener.Addr().String(), options)
 		require.NoError(t, err)
 		defer conn.Close()
 
@@ -80,10 +80,10 @@ func ConnectionTest(t *testing.T, options *Options) {
 	})
 
 	t.Run("LargeTransfer", func(t *testing.T) {
-		listener, _, _ := makeEchoListener(t, "", options)
+		listener, _, _ := makeListener(t, "", echoServer, options)
 		defer listener.Close()
 
-		conn, err := makeEchoConn(listener.Addr().String(), options)
+		conn, err := makeConn(listener.Addr().String(), options)
 		require.NoError(t, err)
 		defer conn.Close()
 
@@ -97,8 +97,8 @@ func ConnectionTest(t *testing.T, options *Options) {
 
 // ConnectionBenchmark runs a connection benchmark.
 func ConnectionBenchmark(b *testing.B, options *Options) {
-	address, _, close := makeEchoListeners(b, 1, options)
+	address, _, close := makeListeners(b, 1, echoServer, options)
 	defer close()
 	b.ResetTimer()
-	require.NoError(b, makeEchoCalls(b.N, address, options))
+	require.NoError(b, makeCalls(b.N, address, echoClient, options))
 }
