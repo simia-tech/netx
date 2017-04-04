@@ -15,6 +15,15 @@ func RegisterListenMulticast(network string, listenMulticastFunc ListenMulticast
 	listenMulticastFuncs[network] = listenMulticastFunc
 }
 
+// RegisteredListenMulticastNetworks returns the available networks for the ListenMulticast function.
+func RegisteredListenMulticastNetworks() []string {
+	networks := []string{}
+	for network := range listenMulticastFuncs {
+		networks = append(networks, network)
+	}
+	return networks
+}
+
 // ListenMulticast creates a multicast connection on the provided network at the provided address.
 func ListenMulticast(network, address string, options ...Option) (io.ReadCloser, error) {
 	o := &Options{}

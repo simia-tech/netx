@@ -15,6 +15,15 @@ func RegisterDialMulticast(network string, dialMulticastFunc DialMulticastFunc) 
 	dialMulticastFuncs[network] = dialMulticastFunc
 }
 
+// RegisteredDialMulticastNetworks returns the available networks for the DialMulticast function.
+func RegisteredDialMulticastNetworks() []string {
+	networks := []string{}
+	for network := range dialMulticastFuncs {
+		networks = append(networks, network)
+	}
+	return networks
+}
+
 // DialMulticast opens a multicast connection on the provided network to the provided address.
 func DialMulticast(network, address string, options ...Option) (io.WriteCloser, error) {
 	o := &Options{}

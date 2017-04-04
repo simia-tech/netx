@@ -12,6 +12,7 @@ import (
 	"github.com/simia-tech/netx"
 )
 
+// MulticastTest runs a multicast test suite with the provided options.
 func MulticastTest(t *testing.T, options *Options) {
 	t.Run("OneProducerOneConsumer", func(t *testing.T) {
 		address := netx.RandomAddress("multicast-")
@@ -23,8 +24,8 @@ func MulticastTest(t *testing.T, options *Options) {
 		require.NoError(t, err)
 
 		go func() {
-			conn, err := netx.DialMulticast(options.MulticastNetwork, address, options.MulticastOptions...)
-			require.NoError(t, err)
+			conn, e := netx.DialMulticast(options.MulticastNetwork, address, options.MulticastOptions...)
+			require.NoError(t, e)
 
 			WriteBlock(conn, []byte("test"))
 		}()

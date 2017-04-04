@@ -15,6 +15,7 @@ type Options struct {
 	MulticastOptions         []netx.Option
 }
 
+// Clone returns a clone of the Options struct.
 func (o *Options) Clone() *Options {
 	return &Options{
 		ListenNetwork:            o.ListenNetwork,

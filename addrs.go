@@ -5,6 +5,7 @@ import (
 	"net"
 )
 
+// Addrs is a sortable type alias for a slice of net.Addr.
 type Addrs []net.Addr
 
 func (a Addrs) Len() int {
