@@ -1,0 +1,124 @@
+
+netx
+Semantic Addressing Extension for Go's net Package
+12:14 10 Apr 2017
+Tags: microservice, net, http, grpc
+
+Philipp Brüll
+Developer, simia.tech
+pb@simia.tech
+https://simia.tech
+
+* Micro-services toolkits
+
+- go-kit
+- micro
+- gizmo
+- Kite
+
+Define interfaces and some implementation for transport, configuration, metrics, ...
+
+* The gopher's BFF: standard library
+
+* netx
+
+- Focus on the transport
+- No new interfaces
+- Implements semantic addressing
+- Drop-in replacement of `net`
+
+* Drop-in replacement
+
+Instead of
+
+    listener, err := net.Listen("tcp", "localhost:8080")
+
+    conn, err := net.Dial("tcp", "localhost:8080")
+
+you can use
+
+    listener, err := netx.Listen("tcp", "localhost:8080")
+
+    conn, err := netx.Dial("tcp", "localhost:8080")
+
+It'll do exactly the same.
+
+* Provides more "networks"
+
+    import _ "github.com/simia-tech/netx/network/nats"
+
+    listener, err := netx.Listen("nats", "echo", netx.Nodes("nats://localhost:4222"))
+
+    conn, err := netx.Dial("nats", "echo", netx.Nodes("nats://localhost:4222"))
+
+Current implementations are `consul`, `dnssrv`, `nats` and `quic`.
+
+* nats
+
+- Implementations for `Listen` and `Dial`
+- Basically `tcp` over nats
+- Uses queue groups to select instance node
+- Balancing and fail-over is done via queue groups
+- Used in production
+
+* consul
+
+- Implementations for `Listen` and `Dial`
+- Custom balancing using the `Balancer` option
+- Not tested to the extend
+
+* dnssrv
+
+- Implementation only for `Dial`
+- Custom balancing using the `Balancer` option
+
+* quic
+
+- No semantic addressing
+- Experimental
+
+* HTTP
+
+    listener, _ := netx.Listen("nats", "greeter", netx.Nodes("nats://localhost:4222"))
+
+    mux := &http.ServeMux{}
+    mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+      fmt.Fprintf(w, "Hello")
+    })
+
+    server := &http.Server{Handler: mux}
+    go func() {
+      server.Serve(listener)
+    }()
+
+    client := &http.Client{
+      Transport: netx.NewHTTPTransport("nats", netx.Nodes("nats://localhost:4222")),
+    }
+    response, _ := client.Get("http://greeter/hello")
+    defer response.Body.Close()
+
+    body, _ := ioutil.ReadAll(response.Body)
+    fmt.Println(string(body))
+    // Output: Hello
+
+* GRPC
+
+  listener, _ := netx.Listen("nats", "echo", netx.Nodes("nats://localhost:4222"))
+
+  server := grpc.NewServer()
+  model.Register...(server, ...)
+
+  go func() {
+    if err := server.Serve(listener); err != nil {
+      log.Println(err)
+    }
+  }()
+
+  conn, _ := grpc.Dial("echo",
+    grpc.WithDialer(netx.NewGRPCDialer("nats", netx.Nodes("nats://localhost:4222"))))
+
+* ToDo
+
+- more testing
+- quic!
+- Multicast?
