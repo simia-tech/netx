@@ -23,9 +23,9 @@ Define interfaces and some implementation for transport, configuration, metrics,
 * netx
 
 - Focus on the transport
-- No new interfaces
+- No new interfaces - uses `net.Listener` and `net.Conn`
 - Implements semantic addressing
-- Drop-in replacement of `net`
+- Drop-in replacement of `net.Listen` and `net.Dial`
 
 * Drop-in replacement
 
@@ -65,12 +65,13 @@ Current implementations are `consul`, `dnssrv`, `nats` and `quic`.
 
 - Implementations for `Listen` and `Dial`
 - Custom balancing using the `Balancer` option
-- Not tested to the extend
+- Not much tested
 
 * dnssrv
 
 - Implementation only for `Dial`
 - Custom balancing using the `Balancer` option
+- Not much tested
 
 * quic
 
