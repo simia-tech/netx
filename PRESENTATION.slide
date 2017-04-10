@@ -20,7 +20,7 @@ Define interfaces and some implementation for transport, configuration, metrics,
 
 * The gopher's BFF: standard library
 
-* netx
+* github.com/simia-tech/netx
 
 - Focus on the transport
 - Implements semantic addressing
