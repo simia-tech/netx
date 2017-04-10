@@ -23,19 +23,19 @@ Define interfaces and some implementation for transport, configuration, metrics,
 * netx
 
 - Focus on the transport
-- No new interfaces - uses `net.Listener` and `net.Conn`
 - Implements semantic addressing
+- No new interfaces - uses `net.Listener` and `net.Conn`
 - Drop-in replacement of `net.Listen` and `net.Dial`
 
 * Drop-in replacement
 
-Instead of
+The calls
 
     listener, err := net.Listen("tcp", "localhost:8080")
 
     conn, err := net.Dial("tcp", "localhost:8080")
 
-you can use
+can be replaced by
 
     listener, err := netx.Listen("tcp", "localhost:8080")
 
@@ -120,6 +120,7 @@ Current implementations are `consul`, `dnssrv`, `nats` and `quic`.
 
 * ToDo
 
-- more testing
+- more testing (`github.com/simia-tech/netx/test`)
 - quic!
-- Multicast?
+- other implementations
+- multicast?
