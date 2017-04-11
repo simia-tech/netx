@@ -46,6 +46,8 @@ func main() {
 ```go
 import (
   "net/http"
+  "fmt"
+  "io/ioutil"
 
   "github.com/simia-tech/netx"
   _ "github.com/simia-tech/netx/network/nats"
