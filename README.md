@@ -48,7 +48,6 @@ import (
   "http"
 
   "github.com/simia-tech/netx"
-  "github.com/simia-tech/netx/httpx"
   _ "github.com/simia-tech/netx/network/nats"
 )
 
@@ -65,7 +64,9 @@ func main() {
     server.Serve(listener)
   }()
 
-  client := &http.Client{Transport: httpx.NewTransport("nats", netx.Nodes("nats://localhost:4222"))}
+  client := &http.Client{
+    Transport: netx.NewHTTPTransport("nats", netx.Nodes("nats://localhost:4222")),
+  }
   response, _ := client.Get("http://greeter/hello")
   defer response.Body.Close()
 
