@@ -45,7 +45,7 @@ func main() {
 
 ```go
 import (
-  "http"
+  "net/http"
 
   "github.com/simia-tech/netx"
   _ "github.com/simia-tech/netx/network/nats"
