@@ -23,6 +23,7 @@ _testmain.go
 *.test
 *.prof
 
-example/consul/consul
-example/dnssrv/dnssrv
-example/nats/nats
+example/consul-http/consul-http
+example/dnssrv-http/dnssrv-http
+example/nats-grpc/nats-grpc
+example/nats-http/nats-http
