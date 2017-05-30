@@ -84,7 +84,7 @@ func main() {
 
 ## More examples
 
-More example can be found in the [examples](https://github.com/simia-tech/netx/example) directory.
+More example can be found in the [example](https://github.com/simia-tech/netx/tree/master/example) directory.
 
 ## Tests
 
