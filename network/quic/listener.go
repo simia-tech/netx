@@ -1,7 +1,6 @@
 package quic
 
 import (
-	"log"
 	"net"
 
 	quic "github.com/lucas-clemente/quic-go"
@@ -9,8 +8,7 @@ import (
 )
 
 type listener struct {
-	listener    quic.Listener
-	sessionChan chan quic.Session
+	listener quic.Listener
 }
 
 func init() {
@@ -18,35 +16,23 @@ func init() {
 }
 
 func Listen(address string, options *netx.Options) (net.Listener, error) {
-	sessionChan := make(chan quic.Session)
-
 	l, err := quic.ListenAddr(address, &quic.Config{
 		TLSConfig: options.TLSConfig,
-		ConnState: func(session quic.Session, connState quic.ConnState) {
-			log.Printf("conn state %v", connState)
-			if connState == quic.ConnStateSecure {
-				sessionChan <- session
-			}
-		},
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	go func() {
-		if err := l.Serve(); err != nil {
-			log.Println(err)
-		}
-	}()
-
 	return &listener{
-		listener:    l,
-		sessionChan: sessionChan,
+		listener: l,
 	}, nil
 }
 
 func (l *listener) Accept() (net.Conn, error) {
-	session := <-l.sessionChan
+	session, err := l.listener.Accept()
+	if err != nil {
+		return nil, err
+	}
 
 	stream, err := session.AcceptStream()
 	if err != nil {
@@ -54,8 +40,7 @@ func (l *listener) Accept() (net.Conn, error) {
 	}
 
 	return &conn{
-		session: session,
-		stream:  stream,
+		stream: stream,
 	}, nil
 }
 
