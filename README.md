@@ -82,6 +82,52 @@ func main() {
 }
 ```
 
+## GRPC connection example
+
+```go
+import (
+	"fmt"
+	"log"
+	"time"
+
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+
+	"github.com/simia-tech/netx"
+	_ "github.com/simia-tech/netx/network/nats"
+)
+
+type echoServer struct{}
+
+func (e *echoServer) Echo(ctx context.Context, request *EchoRequest) (*EchoResponse, error) {
+	return &EchoResponse{Text: request.Text}, nil
+}
+
+func main() {
+	listener, _ := netx.Listen("nats", "echo", netx.Nodes("nats://localhost:4222"))
+
+	server := grpc.NewServer()
+	RegisterEchoServiceServer(server, &echoServer{})
+
+	go func() {
+		server.Serve(listener)
+	}()
+
+	conn, _ := grpc.Dial("echo",
+		grpc.WithDialer(netx.NewGRPCDialer("nats", netx.Nodes("nats://localhost:4222"))),
+		grpc.WithInsecure())
+
+	client := NewEchoServiceClient(conn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	response, _ := client.Echo(ctx, &EchoRequest{Text: "Hello"})
+	cancel()
+
+	fmt.Println(response.Text)
+	// Output: Hello
+}
+```
+
 ## More examples
 
 More example can be found in the [example](https://github.com/simia-tech/netx/tree/master/example) directory.
