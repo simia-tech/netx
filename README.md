@@ -3,7 +3,11 @@
 [![GoDoc](https://godoc.org/github.com/simia-tech/netx?status.svg)](https://godoc.org/github.com/simia-tech/netx) [![Build Status](https://travis-ci.org/simia-tech/netx.svg?branch=master)](https://travis-ci.org/simia-tech/netx)
 
 This package provides an extention of go stdlib's net package. It provides extended `Listen` and `Dial` methods
-in order to enabled clients and servers for semantic addressing.
+in order to enabled clients and servers for semantic addressing. The returned structs implement `net.Listener` and
+`net.Conn` and should seamlessly integrate with your existing application.
+
+For transport/service organisation, [NATS](http://nats.io), [consul](https://consul.io) or DNSSRV can be used. An
+implementation of quic is in development.
 
 The following examples require a local [NATS](http://nats.io) node on port 4222.
 
@@ -77,6 +81,10 @@ func main() {
   // Output: Hello
 }
 ```
+
+## More examples
+
+More example can be found in the [examples](https://github.com/simia-tech/netx/example) directory.
 
 ## Tests
 
