@@ -21,9 +21,7 @@ func init() {
 }
 
 func Dial(address string, options *netx.Options) (net.Conn, error) {
-	session, err := quic.DialAddr(address, &quic.Config{
-		TLSConfig: options.TLSConfig,
-	})
+	session, err := quic.DialAddr(address, options.TLSConfig, &quic.Config{})
 	if err != nil {
 		return nil, err
 	}

@@ -16,9 +16,7 @@ func init() {
 }
 
 func Listen(address string, options *netx.Options) (net.Listener, error) {
-	l, err := quic.ListenAddr(address, &quic.Config{
-		TLSConfig: options.TLSConfig,
-	})
+	l, err := quic.ListenAddr(address, options.TLSConfig, &quic.Config{})
 	if err != nil {
 		return nil, err
 	}
