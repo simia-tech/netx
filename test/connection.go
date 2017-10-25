@@ -76,7 +76,7 @@ func ConnectionTest(t *testing.T, options *Options) {
 		buffer := [4]byte{}
 		_, err = conn.Read(buffer[:])
 		require.Error(t, err)
-		assert.True(t, strings.HasSuffix(err.Error(), "timeout"))
+		assert.True(t, strings.HasSuffix(err.Error(), "timeout"), "expected [%s] to end with [timeout]", err.Error())
 	})
 
 	t.Run("LargeTransfer", func(t *testing.T) {

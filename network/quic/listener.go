@@ -15,6 +15,7 @@ func init() {
 	netx.RegisterListen("quic", Listen)
 }
 
+// Listen starts a listener at the provided address.
 func Listen(address string, options *netx.Options) (net.Listener, error) {
 	l, err := quic.ListenAddr(address, options.TLSConfig, &quic.Config{})
 	if err != nil {

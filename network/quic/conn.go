@@ -20,6 +20,7 @@ func init() {
 	netx.RegisterDial("quic", Dial)
 }
 
+// Dial opens a connection to the provided address.
 func Dial(address string, options *netx.Options) (net.Conn, error) {
 	session, err := quic.DialAddr(address, options.TLSConfig, &quic.Config{})
 	if err != nil {
@@ -44,8 +45,11 @@ func (c *conn) Read(data []byte) (int, error) {
 		case qerr.PeerGoingAway:
 			err = io.EOF
 		case qerr.NetworkIdleTimeout:
-			err = fmt.Errorf("timeout")
+			err = fmt.Errorf("read timeout")
 		}
+	}
+	if err != nil && err.Error() == "deadline exceeded" {
+		err = fmt.Errorf("read timeout")
 	}
 	return n, err
 }
@@ -56,8 +60,14 @@ func (c *conn) Write(data []byte) (int, error) {
 }
 
 func (c *conn) Close() error {
+	if c.stream == nil {
+		return nil
+	}
 	if err := c.stream.Close(); err != nil {
 		return err
+	}
+	if c.session == nil {
+		return nil
 	}
 	if err := c.session.Close(nil); err != nil {
 		return err
@@ -66,7 +76,7 @@ func (c *conn) Close() error {
 }
 
 func (c *conn) LocalAddr() net.Addr {
-	return nil
+	return c.session.LocalAddr()
 }
 
 func (c *conn) RemoteAddr() net.Addr {
@@ -74,15 +84,15 @@ func (c *conn) RemoteAddr() net.Addr {
 }
 
 func (c *conn) SetDeadline(t time.Time) error {
-	return nil
+	return c.stream.SetDeadline(t)
 }
 
 func (c *conn) SetReadDeadline(t time.Time) error {
-	return nil
+	return c.stream.SetReadDeadline(t)
 }
 
 func (c *conn) SetWriteDeadline(t time.Time) error {
-	return nil
+	return c.stream.SetWriteDeadline(t)
 }
 
 func (c *conn) String() string {
