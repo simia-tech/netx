@@ -6,20 +6,18 @@ language: go
 go:
   - 1.7
   - 1.8
+  - 1.9
   - tip
 
+services:
+  - docker
+
 before_install:
-  - wget 'https://releases.hashicorp.com/consul/0.7.1/consul_0.7.1_linux_amd64.zip'
-  - unzip consul_0.7.1_linux_amd64.zip
-  - ./consul --version
-  - wget 'https://github.com/nats-io/gnatsd/releases/download/v0.9.4/gnatsd-v0.9.4-linux-amd64.zip'
-  - unzip gnatsd-v0.9.4-linux-amd64.zip
-  - ./gnatsd-v0.9.4-linux-amd64/gnatsd -v
+  - docker run -d -p 127.0.0.1:8500:8500 consul:latest
+  - docker run -d -p 127.0.0.1:4222:4222 nats:latest
+  - dep ensure
 
 install: go get -t ./...
 
 script:
-  - ./consul agent -dev &
-  - ./gnatsd-v0.9.4-linux-amd64/gnatsd -D &
-  - sleep 3
   - go test -v ./...
