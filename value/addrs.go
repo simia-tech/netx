@@ -1,4 +1,4 @@
-package netx
+package value
 
 import (
 	"math/big"

@@ -5,6 +5,8 @@ import (
 	"log"
 	"net"
 	"sort"
+
+	"github.com/simia-tech/netx/value"
 )
 
 var dialFuncs = map[string]DialFunc{}
@@ -49,7 +51,7 @@ func Dial(network, address string, options ...Option) (net.Conn, error) {
 }
 
 // DialOne dials one of the provided addresses using the provided options.
-func DialOne(addrs Addrs, options *Options) (net.Conn, error) {
+func DialOne(addrs value.Addrs, options *Options) (net.Conn, error) {
 	sort.Sort(addrs)
 
 	balancer := options.Balancer

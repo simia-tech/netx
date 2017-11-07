@@ -38,6 +38,7 @@ func init() {
 }
 
 func TestConnection(t *testing.T) {
+	t.SkipNow()
 	test.ConnectionTest(t, options)
 }
 
