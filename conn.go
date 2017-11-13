@@ -2,9 +2,7 @@ package netx
 
 import (
 	"crypto/tls"
-	"log"
 	"net"
-	"sort"
 
 	"github.com/simia-tech/netx/value"
 )
@@ -12,7 +10,7 @@ import (
 var dialFuncs = map[string]DialFunc{}
 
 // DialFunc defines the signature of the Dial function.
-type DialFunc func(string, *Options) (net.Conn, error)
+type DialFunc func(string, *value.DialOptions) (net.Conn, error)
 
 // RegisterDial registers the provided Dial method under the provided network name.
 func RegisterDial(network string, dialFunc DialFunc) {
@@ -29,8 +27,8 @@ func RegisteredDialNetworks() []string {
 }
 
 // Dial establishs a connection on the provided network to the provided address.
-func Dial(network, address string, options ...Option) (net.Conn, error) {
-	o := &Options{}
+func Dial(network, address string, options ...value.DialOption) (net.Conn, error) {
+	o := &value.DialOptions{}
 	for _, option := range options {
 		if option == nil {
 			continue
@@ -48,31 +46,4 @@ func Dial(network, address string, options ...Option) (net.Conn, error) {
 		return net.Dial(network, address)
 	}
 	return tls.Dial(network, address, o.TLSConfig)
-}
-
-// DialOne dials one of the provided addresses using the provided options.
-func DialOne(addrs value.Addrs, options *Options) (net.Conn, error) {
-	sort.Sort(addrs)
-
-	balancer := options.Balancer
-	if balancer == nil {
-		balancer = DefaultOptions.Balancer
-	}
-
-	for {
-		addr, err := balancer(addrs)
-		if err != nil {
-			return nil, err
-		}
-		if addr == nil {
-			return nil, ErrServiceUnavailable
-		}
-
-		conn, err := net.Dial(addr.Network(), addr.String())
-		if err != nil {
-			log.Printf("error connecting to %s: %v", addr, err)
-			continue
-		}
-		return conn, nil
-	}
 }

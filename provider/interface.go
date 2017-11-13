@@ -4,5 +4,5 @@ import "github.com/simia-tech/netx/value"
 
 // Interface defines the provider interface.
 type Interface interface {
-	Addrs() (value.Addrs, error)
+	Dials(string) (value.Dials, error)
 }

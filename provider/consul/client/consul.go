@@ -1,4 +1,4 @@
-package consul
+package client
 
 import (
 	"bytes"
@@ -8,37 +8,44 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
-	"net/url"
-	"os"
 	"strconv"
+
+	"github.com/simia-tech/netx"
+	"github.com/simia-tech/netx/provider/static"
+	"github.com/simia-tech/netx/selector/roundrobin"
+	"github.com/simia-tech/netx/value"
 )
 
-type consul struct {
-	address string
-	node    string
+type Consul struct {
+	client *http.Client
+	node   string
 }
 
-func newConsulFrom(nodes []string) (*consul, error) {
-	if len(nodes) < 1 {
-		return nil, fmt.Errorf("no node specified")
+func NewConsul(urls []string, options ...value.DialOption) (*Consul, error) {
+	p := static.NewProvider()
+	for _, url := range urls {
+		dial, err := value.ParseDialURL(url, options...)
+		if err != nil {
+			return nil, fmt.Errorf("parsing dial url [%s]: %v", url, err)
+		}
+		p.Add("consul", dial)
 	}
-	url, err := url.Parse(nodes[0])
+
+	md, err := netx.NewMultiDialer(p, roundrobin.NewSelector())
 	if err != nil {
-		return nil, fmt.Errorf("parsing network url [%s] failed: %v", nodes[0], err)
+		return nil, err
 	}
 
-	node, _ := os.Hostname()
-	if value := url.Query().Get("node"); value != "" {
-		node = value
+	client := &http.Client{
+		Transport: netx.NewHTTPMultiTransport(md),
 	}
 
-	return &consul{
-		address: url.Host,
-		node:    node,
+	return &Consul{
+		client: client,
 	}, nil
 }
 
-func (c *consul) register(name string, addr net.Addr) (string, error) {
+func (c *Consul) Register(name string, addr net.Addr) (string, error) {
 	host, p, err := net.SplitHostPort(addr.String())
 	if err != nil {
 		return "", err
@@ -69,7 +76,7 @@ func (c *consul) register(name string, addr net.Addr) (string, error) {
 		return "", err
 	}
 
-	request, err := http.NewRequest("PUT", fmt.Sprintf("http://%s/v1/catalog/register", c.address), buffer)
+	request, err := http.NewRequest("PUT", "http://consul/v1/catalog/register", buffer)
 	if err != nil {
 		return "", err
 	}
@@ -87,7 +94,7 @@ func (c *consul) register(name string, addr net.Addr) (string, error) {
 	return id, nil
 }
 
-func (c *consul) deregister(id string) error {
+func (c *Consul) Deregister(id string) error {
 	m := map[string]interface{}{
 		"Node":      c.node,
 		"ServiceID": id,
@@ -98,7 +105,7 @@ func (c *consul) deregister(id string) error {
 		return err
 	}
 
-	request, err := http.NewRequest("PUT", fmt.Sprintf("http://%s/v1/catalog/deregister", c.address), buffer)
+	request, err := http.NewRequest("PUT", "http://consul/v1/catalog/deregister", buffer)
 	if err != nil {
 		return err
 	}
@@ -116,8 +123,8 @@ func (c *consul) deregister(id string) error {
 	return nil
 }
 
-func (c *consul) service(name string) ([]net.Addr, error) {
-	response, err := http.DefaultClient.Get(fmt.Sprintf("http://%s/v1/catalog/service/%s", c.address, name))
+func (c *Consul) Service(name string) ([]net.Addr, error) {
+	response, err := http.DefaultClient.Get(fmt.Sprintf("http://consul/v1/catalog/service/%s", name))
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,9 @@
 package test
 
-import "github.com/simia-tech/netx"
+import (
+	"github.com/simia-tech/netx"
+	"github.com/simia-tech/netx/value"
+)
 
 // Options holds the test options.
 type Options struct {
@@ -8,7 +11,7 @@ type Options struct {
 	ListenAddress            string
 	ListenOptions            []netx.Option
 	DialNetwork              string
-	DialOptions              []netx.Option
+	DialOptions              []value.DialOption
 	MulticastNetwork         string
 	MulticastRequestAddress  string
 	MulticastResponseAddress string
@@ -22,7 +25,7 @@ func (o *Options) Clone() *Options {
 		ListenAddress:            o.ListenAddress,
 		ListenOptions:            cloneOptionSlice(o.ListenOptions),
 		DialNetwork:              o.DialNetwork,
-		DialOptions:              cloneOptionSlice(o.DialOptions),
+		DialOptions:              cloneDialOptionSlice(o.DialOptions),
 		MulticastNetwork:         o.MulticastNetwork,
 		MulticastRequestAddress:  o.MulticastRequestAddress,
 		MulticastResponseAddress: o.MulticastResponseAddress,
@@ -32,6 +35,14 @@ func (o *Options) Clone() *Options {
 
 func cloneOptionSlice(options []netx.Option) []netx.Option {
 	result := []netx.Option{}
+	for _, option := range options {
+		result = append(result, option)
+	}
+	return result
+}
+
+func cloneDialOptionSlice(options []value.DialOption) []value.DialOption {
+	result := []value.DialOption{}
 	for _, option := range options {
 		result = append(result, option)
 	}

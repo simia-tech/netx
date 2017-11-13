@@ -1,34 +1,35 @@
 package static
 
 import (
-	"net"
+	"fmt"
 
-	"github.com/simia-tech/netx/provider"
 	"github.com/simia-tech/netx/value"
 )
 
-type static struct {
-	addrs []net.Addr
+// Static implements a static provider.
+type Static struct {
+	dials map[string]value.Dials
 }
 
 // NewProvider returns a new static provider.
-func NewProvider(addrs ...net.Addr) provider.Interface {
-	return &static{addrs: addrs}
+func NewProvider() *Static {
+	return &Static{dials: make(map[string]value.Dials)}
 }
 
-// NewProviderFromURLs returns a new static provider made from the provided urls.
-func NewProviderFromURLs(urls ...string) (provider.Interface, error) {
-	addrs := []net.Addr{}
-	for _, url := range urls {
-		addr, err := value.ParseAddrURL(url)
-		if err != nil {
-			return nil, err
-		}
-		addrs = append(addrs, addr)
+// Add adds the provided dial to the provider.
+func (p *Static) Add(service string, dial value.Dial) {
+	if d, ok := p.dials[service]; ok {
+		p.dials[service] = append(d, dial)
+	} else {
+		p.dials[service] = value.Dials{dial}
 	}
-	return NewProvider(addrs...), nil
 }
 
-func (p *static) Addrs() (value.Addrs, error) {
-	return p.addrs, nil
+// Dials returns the Dials for the provided service.
+func (p *Static) Dials(service string) (value.Dials, error) {
+	dials, ok := p.dials[service]
+	if !ok {
+		return nil, fmt.Errorf("unknown service [%s]", service)
+	}
+	return dials, nil
 }
