@@ -15,6 +15,7 @@ import (
 	"github.com/simia-tech/netx"
 	_ "github.com/simia-tech/netx/network/quic"
 	"github.com/simia-tech/netx/test"
+	"github.com/simia-tech/netx/value"
 )
 
 var options = &test.Options{
@@ -34,7 +35,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	options.DialOptions = []netx.Option{netx.TLS(tlsConfig)}
+	options.DialOptions = []value.DialOption{value.TLS(tlsConfig)}
 }
 
 func TestConnection(t *testing.T) {

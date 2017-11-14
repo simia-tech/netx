@@ -9,6 +9,7 @@ import (
 type DialOptions struct {
 	TLSConfig *tls.Config
 	Timeout   time.Duration
+	Nodes     []string
 }
 
 // DialOption defines a function that can modify the provided DialOptions structure.
@@ -26,6 +27,14 @@ func TLS(value *tls.Config) DialOption {
 func Timeout(value time.Duration) DialOption {
 	return func(do *DialOptions) error {
 		do.Timeout = value
+		return nil
+	}
+}
+
+// Nodes returns on options to set the nodes.
+func Nodes(value ...string) DialOption {
+	return func(do *DialOptions) error {
+		do.Nodes = value
 		return nil
 	}
 }

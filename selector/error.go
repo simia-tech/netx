@@ -4,5 +4,5 @@ import "errors"
 
 // Selector errors.
 var (
-	ErrNoDial = errors.New("no dial")
+	ErrNoEndpoint = errors.New("no endpoint")
 )

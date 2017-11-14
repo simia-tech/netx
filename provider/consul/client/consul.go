@@ -24,7 +24,7 @@ type Consul struct {
 func NewConsul(urls []string, options ...value.DialOption) (*Consul, error) {
 	p := static.NewProvider()
 	for _, url := range urls {
-		dial, err := value.ParseDialURL(url, options...)
+		dial, err := value.ParseEndpointURL(url, options...)
 		if err != nil {
 			return nil, fmt.Errorf("parsing dial url [%s]: %v", url, err)
 		}

@@ -11,6 +11,7 @@ import (
 
 	"github.com/simia-tech/netx"
 	"github.com/simia-tech/netx/model"
+	"github.com/simia-tech/netx/value"
 )
 
 const overheadSize = 100
@@ -35,7 +36,7 @@ func init() {
 }
 
 // Dial establishes a connection to the provided address on the provided network.
-func Dial(address string, options *netx.Options) (net.Conn, error) {
+func Dial(address string, options *value.DialOptions) (net.Conn, error) {
 	o := []n.Option{}
 	if options.TLSConfig != nil {
 		o = append(o, n.Secure(options.TLSConfig))
@@ -61,7 +62,7 @@ func Dial(address string, options *netx.Options) (net.Conn, error) {
 	}
 
 	packet := (*model.Packet)(nil)
-	if timeout := options.DialTimeout; timeout == 0 {
+	if timeout := options.Timeout; timeout == 0 {
 		packet, err = c.receivePacket()
 	} else {
 		packet, err = receivePacket(c.subscription, timeout)

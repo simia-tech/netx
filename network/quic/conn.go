@@ -9,6 +9,7 @@ import (
 	quic "github.com/lucas-clemente/quic-go"
 	"github.com/lucas-clemente/quic-go/qerr"
 	"github.com/simia-tech/netx"
+	"github.com/simia-tech/netx/value"
 )
 
 type conn struct {
@@ -21,7 +22,7 @@ func init() {
 }
 
 // Dial opens a connection to the provided address.
-func Dial(address string, options *netx.Options) (net.Conn, error) {
+func Dial(address string, options *value.DialOptions) (net.Conn, error) {
 	session, err := quic.DialAddr(address, options.TLSConfig, &quic.Config{})
 	if err != nil {
 		return nil, err

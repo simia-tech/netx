@@ -1,6 +1,7 @@
 package roundrobin_test
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,29 +23,47 @@ func TestRoundRobinSelect(t *testing.T) {
 		expectThirdDialURL  string
 	}{
 		{"Loop", []string{"tcp://localhost:1000", "tcp://localhost:2000"}, nil, "tcp://localhost:1000", "tcp://localhost:2000", "tcp://localhost:1000"},
-		{"Empty", []string{}, selector.ErrNoDial, "", "", ""},
+		{"Empty", []string{}, selector.ErrNoEndpoint, "", "", ""},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			dials := value.MustParseDialURLs(testCase.urls)
+			endpoints := value.MustParseEndpointURLs(testCase.urls)
 			s := roundrobin.NewSelector()
 
-			dial, err := s.Select(dials)
+			endpoint, err := s.Select(endpoints)
 			if testCase.expectFirstError == nil {
 				require.NoError(t, err)
-				assert.Equal(t, testCase.expectFirstDialURL, value.DialURL(dial))
+				assert.Equal(t, testCase.expectFirstDialURL, value.EndpointURL(endpoint))
 
-				dial, err = s.Select(dials)
+				endpoint, err = s.Select(endpoints)
 				require.NoError(t, err)
-				assert.Equal(t, testCase.expectSecondDialURL, value.DialURL(dial))
+				assert.Equal(t, testCase.expectSecondDialURL, value.EndpointURL(endpoint))
 
-				dial, err = s.Select(dials)
+				endpoint, err = s.Select(endpoints)
 				require.NoError(t, err)
-				assert.Equal(t, testCase.expectThirdDialURL, value.DialURL(dial))
+				assert.Equal(t, testCase.expectThirdDialURL, value.EndpointURL(endpoint))
 			} else {
 				assert.Equal(t, testCase.expectFirstError.Error(), err.Error())
 			}
 		})
 	}
+}
+
+func TestRoundRobinConcurrentSelect(t *testing.T) {
+	endpoints := value.MustParseEndpointURLs([]string{"tcp://localhost:1000", "tcp://localhost:2000"})
+	s := roundrobin.NewSelector()
+
+	wg := sync.WaitGroup{}
+	for index := 0; index < 5; index++ {
+		wg.Add(1)
+		go func() {
+			for i := 0; i < 20; i++ {
+				_, err := s.Select(endpoints)
+				require.NoError(t, err)
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
 }

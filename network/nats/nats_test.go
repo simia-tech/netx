@@ -6,13 +6,14 @@ import (
 	"github.com/simia-tech/netx"
 	_ "github.com/simia-tech/netx/network/nats"
 	"github.com/simia-tech/netx/test"
+	"github.com/simia-tech/netx/value"
 )
 
 var options = &test.Options{
 	ListenNetwork:    "nats",
 	ListenOptions:    []netx.Option{netx.Nodes("nats://localhost:4222")},
 	DialNetwork:      "nats",
-	DialOptions:      []netx.Option{netx.Nodes("nats://localhost:4222")},
+	DialOptions:      []value.DialOption{value.Nodes("nats://localhost:4222")},
 	MulticastNetwork: "nats",
 	MulticastOptions: []netx.Option{netx.Nodes("nats://localhost:4222")},
 }
@@ -23,14 +24,6 @@ func TestConnection(t *testing.T) {
 
 func BenchmarkConnection(b *testing.B) {
 	test.ConnectionBenchmark(b, options)
-}
-
-func TestRandomBalancing(t *testing.T) {
-	test.RandomBalancingTest(t, options)
-}
-
-func BenchmarkBalancing(b *testing.B) {
-	test.RandomBalancingBenchmark(b, options)
 }
 
 func TestMulticast(t *testing.T) {
