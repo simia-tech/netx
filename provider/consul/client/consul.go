@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"math/rand"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/simia-tech/netx"
@@ -40,17 +40,23 @@ func NewConsul(urls []string, options ...value.DialOption) (*Consul, error) {
 		Transport: netx.NewHTTPMultiTransport(md),
 	}
 
+	node, err := os.Hostname()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Consul{
 		client: client,
+		node:   node,
 	}, nil
 }
 
-func (c *Consul) Register(name string, addr net.Addr) (string, error) {
-	host, p, err := net.SplitHostPort(addr.String())
+func (c *Consul) Register(name string, endpoint value.Endpoint) (string, error) {
+	host, p, err := net.SplitHostPort(endpoint.Address())
 	if err != nil {
 		return "", err
 	}
-	port := 0
+	var port int
 	if port, err = strconv.Atoi(p); err != nil {
 		port = 0
 	}
@@ -63,12 +69,10 @@ func (c *Consul) Register(name string, addr net.Addr) (string, error) {
 		"Service": map[string]interface{}{
 			"ID":      id,
 			"Service": name,
+			"Tags":    []interface{}{endpoint.Network()},
 			"Address": host,
 			"Port":    port,
 		},
-	}
-	if port > 0 {
-		m["Service"].(map[string]interface{})["Port"] = port
 	}
 
 	buffer := &bytes.Buffer{}
@@ -81,7 +85,7 @@ func (c *Consul) Register(name string, addr net.Addr) (string, error) {
 		return "", err
 	}
 
-	response, err := http.DefaultClient.Do(request)
+	response, err := c.client.Do(request)
 	if err != nil {
 		return "", err
 	}
@@ -110,7 +114,7 @@ func (c *Consul) Deregister(id string) error {
 		return err
 	}
 
-	response, err := http.DefaultClient.Do(request)
+	response, err := c.client.Do(request)
 	if err != nil {
 		return err
 	}
@@ -123,8 +127,8 @@ func (c *Consul) Deregister(id string) error {
 	return nil
 }
 
-func (c *Consul) Service(name string) ([]net.Addr, error) {
-	response, err := http.DefaultClient.Get(fmt.Sprintf("http://consul/v1/catalog/service/%s", name))
+func (c *Consul) Service(name string) (value.Endpoints, error) {
+	response, err := c.client.Get(fmt.Sprintf("http://consul/v1/catalog/service/%s", name))
 	if err != nil {
 		return nil, err
 	}
@@ -135,19 +139,20 @@ func (c *Consul) Service(name string) ([]net.Addr, error) {
 		return nil, err
 	}
 
-	addrs := []net.Addr{}
+	endpoints := value.Endpoints{}
 	for _, entry := range body {
 		entryMap := entry.(map[string]interface{})
-		address := fmt.Sprintf("%s:%v", entryMap["ServiceAddress"], entryMap["ServicePort"])
-		addr, err := net.ResolveTCPAddr("tcp", address)
-		if err != nil {
-			log.Printf("could not resolve address [%s]: %v", address, err)
-			continue
+		network := "tcp"
+		tags := entryMap["ServiceTags"].([]interface{})
+		if len(tags) > 0 {
+			network = tags[0].(string)
 		}
-		addrs = append(addrs, addr)
+		address := fmt.Sprintf("%s:%v", entryMap["ServiceAddress"], entryMap["ServicePort"])
+
+		endpoints = append(endpoints, value.NewEndpoint(network, address))
 	}
 
-	return addrs, nil
+	return endpoints, nil
 }
 
 func makeID(prefix string) string {

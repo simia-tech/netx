@@ -24,11 +24,13 @@ func NewHTTPTransport(network string, options ...value.DialOption) *http.Transpo
 	}
 }
 
+// NewHTTPMultiTransport returns a new transport instance that uses the provided MultiDialer.
 func NewHTTPMultiTransport(md *MultiDialer) *http.Transport {
 	return &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: func(ctx context.Context, _, address string) (net.Conn, error) {
-			return md.Dial(address)
+			host, _, _ := net.SplitHostPort(address)
+			return md.Dial(host)
 		},
 		MaxIdleConns:          100,
 		IdleConnTimeout:       90 * time.Second,

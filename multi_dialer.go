@@ -2,6 +2,7 @@ package netx
 
 import (
 	"fmt"
+	"log"
 	"net"
 
 	"github.com/simia-tech/netx/provider"
@@ -24,18 +25,19 @@ func NewMultiDialer(p provider.Interface, s selector.Interface) (*MultiDialer, e
 
 // Dial dials one the endpoints from the provided service.
 func (md *MultiDialer) Dial(service string) (net.Conn, error) {
-	dials, err := md.provider.Endpoints(service)
+retry:
+	endpoints, err := md.provider.Endpoints(service)
 	if err != nil {
 		return nil, fmt.Errorf("provider: %v", err)
 	}
 
-retry:
-	dial, err := md.selector.Select(dials)
+	endpoint, err := md.selector.Select(endpoints)
 	if err != nil {
 		return nil, fmt.Errorf("selector: %v", err)
 	}
+	log.Printf("ep %v / %v", endpoint.Network(), endpoint.Address())
 
-	conn, err := Dial(dial.Network(), dial.Address(), dial.Options()...)
+	conn, err := Dial(endpoint.Network(), endpoint.Address(), endpoint.Options()...)
 	if err != nil {
 		if _, ok := err.(*net.OpError); ok {
 			goto retry
