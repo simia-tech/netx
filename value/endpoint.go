@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	neturl "net/url"
+	"strconv"
 )
 
 // Endpoint holds all parameters for a netx.Endpoint call.
@@ -61,4 +62,17 @@ func (d *endpoint) Options() []DialOption {
 // EndpointURL builds an url from the provided Endpoint.
 func EndpointURL(ep Endpoint) string {
 	return fmt.Sprintf("%s://%s", ep.Network(), ep.Address())
+}
+
+// EndpointPort returns the port of the provided endpoint.
+func EndpointPort(ep Endpoint) int {
+	_, p, err := net.SplitHostPort(ep.Address())
+	if err != nil {
+		panic(fmt.Sprintf("could not split address [%s]", ep.Address()))
+	}
+	port, err := strconv.Atoi(p)
+	if err != nil {
+		panic(fmt.Sprintf("could not convert [%s] to int", p))
+	}
+	return port
 }

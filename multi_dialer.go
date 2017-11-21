@@ -2,7 +2,6 @@ package netx
 
 import (
 	"fmt"
-	"log"
 	"net"
 
 	"github.com/simia-tech/netx/provider"
@@ -35,7 +34,6 @@ retry:
 	if err != nil {
 		return nil, fmt.Errorf("selector: %v", err)
 	}
-	log.Printf("ep %v / %v", endpoint.Network(), endpoint.Address())
 
 	conn, err := Dial(endpoint.Network(), endpoint.Address(), endpoint.Options()...)
 	if err != nil {
