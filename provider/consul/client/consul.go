@@ -16,11 +16,13 @@ import (
 	"github.com/simia-tech/netx/value"
 )
 
+// Consul implements a simple client to the consul HTTP api.
 type Consul struct {
 	client *http.Client
 	node   string
 }
 
+// NewConsul returns a new consul client.
 func NewConsul(urls []string, options ...value.DialOption) (*Consul, error) {
 	p := static.NewProvider()
 	for _, url := range urls {
@@ -51,6 +53,7 @@ func NewConsul(urls []string, options ...value.DialOption) (*Consul, error) {
 	}, nil
 }
 
+// Register adds a service with the provided name and endpoint at the consul agent.
 func (c *Consul) Register(name string, endpoint value.Endpoint) (string, error) {
 	host, p, err := net.SplitHostPort(endpoint.Address())
 	if err != nil {
@@ -98,6 +101,7 @@ func (c *Consul) Register(name string, endpoint value.Endpoint) (string, error) 
 	return id, nil
 }
 
+// Deregister removes the service with the provided id from the consul catalog.
 func (c *Consul) Deregister(id string) error {
 	m := map[string]interface{}{
 		"Node":      c.node,
@@ -127,6 +131,7 @@ func (c *Consul) Deregister(id string) error {
 	return nil
 }
 
+// Service fetches all endpoints for the provided service name from the consul catalog.
 func (c *Consul) Service(name string) (value.Endpoints, error) {
 	response, err := c.client.Get(fmt.Sprintf("http://consul/v1/catalog/service/%s", name))
 	if err != nil {
