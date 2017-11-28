@@ -21,7 +21,7 @@ func (e *echoServer) Echo(ctx context.Context, request *EchoRequest) (*EchoRespo
 
 // This example requires a NATS node to run at localhost:4222. Running `gnatsd -D` should do the job.
 func main() {
-	listener, err := netx.Listen("nats", "echo", netx.Nodes("nats://127.0.0.1:4222"))
+	listener, err := netx.Listen("nats", "echo", value.Nodes("nats://127.0.0.1:4222"))
 	if err != nil {
 		log.Fatal(err)
 	}

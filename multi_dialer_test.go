@@ -142,6 +142,7 @@ func TestMultiDialerConcurrentDial(t *testing.T) {
 	}
 	clientWg.Wait()
 
+	time.Sleep(200 * time.Millisecond)
 	l1.Close()
 	l2.Close()
 	cancel()

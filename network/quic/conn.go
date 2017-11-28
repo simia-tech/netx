@@ -22,7 +22,7 @@ func init() {
 }
 
 // Dial opens a connection to the provided address.
-func Dial(address string, options *value.DialOptions) (net.Conn, error) {
+func Dial(address string, options *value.Options) (net.Conn, error) {
 	session, err := quic.DialAddr(address, options.TLSConfig, &quic.Config{})
 	if err != nil {
 		return nil, err

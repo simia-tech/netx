@@ -4,7 +4,7 @@ package value
 type Endpoints []Endpoint
 
 // ParseEndpointURLs parses the provided urls and returns endpoints.
-func ParseEndpointURLs(urls []string, options ...DialOption) (Endpoints, error) {
+func ParseEndpointURLs(urls []string, options ...Option) (Endpoints, error) {
 	dials := Endpoints{}
 	for _, url := range urls {
 		dial, err := ParseEndpointURL(url, options...)
@@ -17,7 +17,7 @@ func ParseEndpointURLs(urls []string, options ...DialOption) (Endpoints, error) 
 }
 
 // MustParseEndpointURLs works like ParseEndpointURLs, but panics on error.
-func MustParseEndpointURLs(urls []string, options ...DialOption) Endpoints {
+func MustParseEndpointURLs(urls []string, options ...Option) Endpoints {
 	dials, err := ParseEndpointURLs(urls, options...)
 	if err != nil {
 		panic(err)

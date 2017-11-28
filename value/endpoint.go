@@ -11,17 +11,17 @@ import (
 type Endpoint interface {
 	Network() string
 	Address() string
-	Options() []DialOption
+	Options() []Option
 }
 
 type endpoint struct {
 	network string
 	address string
-	options []DialOption
+	options []Option
 }
 
 // NewEndpoint returns a new Dial with the provided values.
-func NewEndpoint(network, address string, options ...DialOption) Endpoint {
+func NewEndpoint(network, address string, options ...Option) Endpoint {
 	return &endpoint{
 		network: network,
 		address: address,
@@ -30,7 +30,7 @@ func NewEndpoint(network, address string, options ...DialOption) Endpoint {
 }
 
 // ParseEndpointURL parses the provided url and returns a Dial.
-func ParseEndpointURL(url string, options ...DialOption) (Endpoint, error) {
+func ParseEndpointURL(url string, options ...Option) (Endpoint, error) {
 	u, err := neturl.Parse(url)
 	if err != nil {
 		return nil, fmt.Errorf("parse url [%s]: %v", url, err)
@@ -39,7 +39,7 @@ func ParseEndpointURL(url string, options ...DialOption) (Endpoint, error) {
 }
 
 // MustParseEndpointURL works like ParseDialURL, but panics on error.
-func MustParseEndpointURL(url string, options ...DialOption) Endpoint {
+func MustParseEndpointURL(url string, options ...Option) Endpoint {
 	d, err := ParseEndpointURL(url, options...)
 	if err != nil {
 		panic(err)
@@ -55,7 +55,7 @@ func (d *endpoint) Address() string {
 	return d.address
 }
 
-func (d *endpoint) Options() []DialOption {
+func (d *endpoint) Options() []Option {
 	return d.options
 }
 

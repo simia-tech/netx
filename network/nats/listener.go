@@ -12,6 +12,7 @@ import (
 
 	"github.com/simia-tech/netx"
 	"github.com/simia-tech/netx/model"
+	"github.com/simia-tech/netx/value"
 )
 
 var endlessTimeout = time.Duration(math.MaxInt64)
@@ -26,7 +27,7 @@ func init() {
 }
 
 // Listen starts a listener at the provided address on the nats network.
-func Listen(address string, options *netx.Options) (net.Listener, error) {
+func Listen(address string, options *value.Options) (net.Listener, error) {
 	o := []n.Option{}
 	if options.TLSConfig != nil {
 		o = append(o, n.Secure(options.TLSConfig))

@@ -10,6 +10,7 @@ import (
 
 	"github.com/simia-tech/netx"
 	"github.com/simia-tech/netx/model"
+	"github.com/simia-tech/netx/value"
 )
 
 type multicastConn struct {
@@ -25,7 +26,7 @@ func init() {
 	netx.RegisterDialMulticast("nats", DialMulticast)
 }
 
-func DialMulticast(address string, options *netx.Options) (io.WriteCloser, error) {
+func DialMulticast(address string, options *value.Options) (io.WriteCloser, error) {
 	o := []n.Option{}
 	if options.TLSConfig != nil {
 		o = append(o, n.Secure(options.TLSConfig))

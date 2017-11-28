@@ -1,6 +1,10 @@
 package netx
 
-import "io"
+import (
+	"io"
+
+	"github.com/simia-tech/netx/value"
+)
 
 type multicast struct {
 	listener io.ReadCloser
@@ -9,7 +13,7 @@ type multicast struct {
 
 // ListenAndDialMulticast listens to the provided readAddress and dials the provided writeAddress. The result is combined
 // in the returned io.ReadWriteCloser interface.
-func ListenAndDialMulticast(network, readAddress, writeAddress string, options ...Option) (io.ReadWriteCloser, error) {
+func ListenAndDialMulticast(network, readAddress, writeAddress string, options ...value.Option) (io.ReadWriteCloser, error) {
 	listener, err := ListenMulticast(network, readAddress, options...)
 	if err != nil {
 		return nil, err

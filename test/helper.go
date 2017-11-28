@@ -37,39 +37,6 @@ func echoClient(conn net.Conn) error {
 	return nil
 }
 
-func makeKillableListeners(tb testing.TB, n int, a action, options *Options) (string, func() []int, func(int) error, func()) {
-	address := netx.RandomAddress("echo-")
-
-	counters := []func() int{}
-	listeners := []net.Listener{}
-	publicListeners := []net.Listener{}
-	listenOptions := options.ListenOptions
-	for index := 0; index < n; index++ {
-		publicListener, err := net.Listen("tcp", "127.0.0.1:0")
-		require.NoError(tb, err)
-		publicListeners = append(publicListeners, publicListener)
-		options.ListenOptions = append(listenOptions, netx.PublicListener(publicListener))
-
-		listener, counter, _ := makeListener(tb, address, a, options)
-		listeners = append(listeners, listener)
-		counters = append(counters, counter)
-	}
-
-	return address, func() []int {
-			result := []int{}
-			for _, counter := range counters {
-				result = append(result, counter())
-			}
-			return result
-		}, func(index int) error {
-			return publicListeners[index].Close()
-		}, func() {
-			for _, listener := range listeners {
-				listener.Close()
-			}
-		}
-}
-
 func makeListeners(tb testing.TB, n int, a action, options *Options) (string, func() []int, func()) {
 	address := netx.RandomAddress("echo-")
 

@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/simia-tech/netx"
+	"github.com/simia-tech/netx/value"
 )
 
 type multicastConn struct {
@@ -15,7 +16,7 @@ func init() {
 	netx.RegisterDialMulticast("udp", DialMulticast)
 }
 
-func DialMulticast(address string, options *netx.Options) (io.WriteCloser, error) {
+func DialMulticast(address string, options *value.Options) (io.WriteCloser, error) {
 	addr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {
 		return nil, err

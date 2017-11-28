@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/simia-tech/netx"
+	"github.com/simia-tech/netx/value"
 )
 
 type multicastListener struct {
@@ -16,7 +17,7 @@ func init() {
 	netx.RegisterListenMulticast("udp", ListenMulticast)
 }
 
-func ListenMulticast(address string, options *netx.Options) (io.ReadCloser, error) {
+func ListenMulticast(address string, options *value.Options) (io.ReadCloser, error) {
 	addr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {
 		return nil, err

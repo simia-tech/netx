@@ -12,7 +12,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/simia-tech/netx"
 	_ "github.com/simia-tech/netx/network/quic"
 	"github.com/simia-tech/netx/test"
 	"github.com/simia-tech/netx/value"
@@ -29,13 +28,13 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	options.ListenOptions = []netx.Option{netx.TLS(tlsConfig)}
+	options.ListenOptions = []value.Option{value.TLS(tlsConfig)}
 
 	tlsConfig, err = generateTLSConfig(nil, x509.ExtKeyUsageClientAuth)
 	if err != nil {
 		panic(err)
 	}
-	options.DialOptions = []value.DialOption{value.TLS(tlsConfig)}
+	options.DialOptions = []value.Option{value.TLS(tlsConfig)}
 }
 
 func TestConnection(t *testing.T) {

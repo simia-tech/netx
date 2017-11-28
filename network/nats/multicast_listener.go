@@ -11,6 +11,7 @@ import (
 
 	"github.com/simia-tech/netx"
 	"github.com/simia-tech/netx/model"
+	"github.com/simia-tech/netx/value"
 )
 
 type multicastListener struct {
@@ -27,7 +28,7 @@ func init() {
 	netx.RegisterListenMulticast("nats", ListenMulticast)
 }
 
-func ListenMulticast(address string, options *netx.Options) (io.ReadCloser, error) {
+func ListenMulticast(address string, options *value.Options) (io.ReadCloser, error) {
 	o := []n.Option{}
 	if options.TLSConfig != nil {
 		o = append(o, n.Secure(options.TLSConfig))

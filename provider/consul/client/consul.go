@@ -25,7 +25,7 @@ type Consul struct {
 }
 
 // NewConsul returns a new consul client.
-func NewConsul(urls []string, options ...value.DialOption) (*Consul, error) {
+func NewConsul(urls []string, options ...value.Option) (*Consul, error) {
 	p := static.NewProvider()
 	for _, url := range urls {
 		dial, err := value.ParseEndpointURL(url, options...)

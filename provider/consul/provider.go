@@ -10,11 +10,11 @@ import (
 // Consul implements the consul provider.
 type Consul struct {
 	Client              *client.Consul
-	EndpointDialOptions []value.DialOption
+	EndpointDialOptions []value.Option
 }
 
 // NewProvider returns a new consul provider.
-func NewProvider(urls []string, options ...value.DialOption) (*Consul, error) {
+func NewProvider(urls []string, options ...value.Option) (*Consul, error) {
 	c, err := client.NewConsul(urls, options...)
 	if err != nil {
 		return nil, err

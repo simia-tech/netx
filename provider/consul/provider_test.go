@@ -13,7 +13,7 @@ func TestProviderEndpoints(t *testing.T) {
 	p, err := consul.NewProvider([]string{"tcp://127.0.0.1:8500"})
 	require.NoError(t, err)
 
-	p.EndpointDialOptions = []value.DialOption{}
+	p.EndpointDialOptions = []value.Option{}
 
 	serviceID, err := p.Client.Register("test", value.NewEndpoint("tcp", "localhost:1000"))
 	require.NoError(t, err)

@@ -3,12 +3,14 @@ package netx
 import (
 	"crypto/tls"
 	"net"
+
+	"github.com/simia-tech/netx/value"
 )
 
 var listenFuncs = map[string]ListenFunc{}
 
 // ListenFunc defines the signature of the Listen function.
-type ListenFunc func(string, *Options) (net.Listener, error)
+type ListenFunc func(string, *value.Options) (net.Listener, error)
 
 // RegisterListen registers the provided Listen method under the provided network name.
 func RegisterListen(network string, listenFunc ListenFunc) {
@@ -25,8 +27,8 @@ func RegisteredListenNetworks() []string {
 }
 
 // Listen creates a listener on the provided network at the provided address.
-func Listen(network, address string, options ...Option) (net.Listener, error) {
-	o := &Options{}
+func Listen(network, address string, options ...value.Option) (net.Listener, error) {
+	o := &value.Options{}
 	for _, option := range options {
 		if option == nil {
 			continue

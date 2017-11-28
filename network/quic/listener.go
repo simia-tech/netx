@@ -5,6 +5,7 @@ import (
 
 	quic "github.com/lucas-clemente/quic-go"
 	"github.com/simia-tech/netx"
+	"github.com/simia-tech/netx/value"
 )
 
 type listener struct {
@@ -16,7 +17,7 @@ func init() {
 }
 
 // Listen starts a listener at the provided address.
-func Listen(address string, options *netx.Options) (net.Listener, error) {
+func Listen(address string, options *value.Options) (net.Listener, error) {
 	l, err := quic.ListenAddr(address, options.TLSConfig, &quic.Config{})
 	if err != nil {
 		return nil, err

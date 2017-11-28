@@ -36,7 +36,7 @@ func init() {
 }
 
 // Dial establishes a connection to the provided address on the provided network.
-func Dial(address string, options *value.DialOptions) (net.Conn, error) {
+func Dial(address string, options *value.Options) (net.Conn, error) {
 	o := []n.Option{}
 	if options.TLSConfig != nil {
 		o = append(o, n.Secure(options.TLSConfig))
