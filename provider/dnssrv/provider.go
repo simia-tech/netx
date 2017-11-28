@@ -2,7 +2,6 @@ package dnssrv
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"strconv"
 	"strings"
@@ -31,13 +30,13 @@ func (p *DNSSRV) Endpoints(service string) (value.Endpoints, error) {
 	request := dns.Msg{}
 	request.SetQuestion(fmt.Sprintf("_%s._.service.consul.", service), dns.TypeSRV)
 
-	log.Printf("request\n%s\n", request.String())
+	// log.Printf("request\n%s\n", request.String())
 
 	response, _, err := client.Exchange(&request, p.address)
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("response\n%s\n", response)
+	// log.Printf("response\n%s\n", response)
 
 	hosts := make(map[string]string)
 	for _, rr := range response.Extra {
