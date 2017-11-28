@@ -1,10 +1,6 @@
 package main
 
-import (
-	"golang.org/x/net/context"
-
-	_ "github.com/simia-tech/netx/network/nats"
-)
+import "context"
 
 type echoServer struct{}
 

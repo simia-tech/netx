@@ -9,8 +9,10 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/simia-tech/netx"
+	"github.com/simia-tech/netx/filter/blacklist"
 	"github.com/simia-tech/netx/provider/static"
 	"github.com/simia-tech/netx/selector/roundrobin"
 	"github.com/simia-tech/netx/value"
@@ -33,7 +35,7 @@ func NewConsul(urls []string, options ...value.DialOption) (*Consul, error) {
 		p.Add("consul", dial)
 	}
 
-	md, err := netx.NewMultiDialer(p, roundrobin.NewSelector())
+	md, err := netx.NewMultiDialer(p, blacklist.NewFilter(blacklist.ConstantBackoff(100*time.Millisecond)), roundrobin.NewSelector())
 	if err != nil {
 		return nil, err
 	}

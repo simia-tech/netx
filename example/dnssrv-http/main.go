@@ -1,10 +1,5 @@
 package main
 
-import (
-	// _ "github.com/simia-tech/netx/network/consul"
-	_ "github.com/simia-tech/netx/network/dnssrv"
-)
-
 // This example requires a consul node to run at localhost:8500 (http) and localhost:8600 (dns).
 // Running `consul agent -dev` should do the job.
 func main() {

@@ -1,9 +1,5 @@
 package main
 
-import (
-	_ "github.com/simia-tech/netx/network/nats"
-)
-
 // This example requires a NATS node to run at localhost:4222. Running `gnatsd -D` should do the job.
 func main() {
 	// listener, err := netx.Listen("nats", "greeter", netx.Nodes("nats://localhost:4222"))
