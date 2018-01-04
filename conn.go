@@ -2,7 +2,6 @@ package netx
 
 import (
 	"crypto/tls"
-	"log"
 	"net"
 
 	"github.com/simia-tech/netx/value"
@@ -51,7 +50,6 @@ func Dial(network, address string, options ...value.Option) (net.Conn, error) {
 	if o.Timeout == 0 {
 		conn, err = net.Dial(network, address)
 	} else {
-		log.Printf("net %s / addr %s / to %s", network, address, o.Timeout)
 		conn, err = net.DialTimeout(network, address, o.Timeout)
 	}
 	if err != nil {
