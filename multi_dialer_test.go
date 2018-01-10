@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/simia-tech/netx"
+	"github.com/simia-tech/netx/filter/blacklist"
 	"github.com/simia-tech/netx/provider/static"
 	"github.com/simia-tech/netx/selector/roundrobin"
 	"github.com/simia-tech/netx/value"
@@ -61,6 +62,22 @@ func TestMultiDialerEndpointFailover(t *testing.T) {
 	cancel()
 	wg.Wait()
 	assert.Equal(t, uint64(2), *c)
+}
+
+func TestMultiDialerEndpointFailure(t *testing.T) {
+	wg := sync.WaitGroup{}
+
+	p := static.NewProvider()
+	p.Add("test", value.NewEndpoint("tcp", "127.0.0.1:5020")) // not existing
+
+	md, err := netx.NewMultiDialer(p, blacklist.NewFilter(blacklist.ConstantBackoff(time.Millisecond)), roundrobin.NewSelector())
+	require.NoError(t, err)
+
+	_, err = md.Dial("test") // should fail
+	require.Error(t, err)
+	assert.Equal(t, "selector: no endpoint", err.Error())
+
+	wg.Wait()
 }
 
 func TestMultiDialerEndpointRecovering(t *testing.T) {

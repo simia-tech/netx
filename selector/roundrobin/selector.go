@@ -17,16 +17,16 @@ func NewSelector() selector.Interface {
 	return &roundrobin{}
 }
 
-func (rr *roundrobin) Select(dials value.Endpoints) (value.Endpoint, error) {
-	if len(dials) < 1 {
+func (rr *roundrobin) Select(endpoints value.Endpoints) (value.Endpoint, error) {
+	if len(endpoints) < 1 {
 		return nil, selector.ErrNoEndpoint
 	}
 	rr.mutex.Lock()
-	if rr.index >= len(dials) {
+	if rr.index >= len(endpoints) {
 		rr.index = 0
 	}
-	dial := dials[rr.index]
+	endpoint := endpoints[rr.index]
 	rr.index++
 	rr.mutex.Unlock()
-	return dial, nil
+	return endpoint, nil
 }
