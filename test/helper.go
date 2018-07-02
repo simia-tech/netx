@@ -6,6 +6,7 @@ import (
 	"net"
 	"testing"
 
+	"code.posteo.de/common/errx"
 	"github.com/simia-tech/netx"
 	"github.com/stretchr/testify/require"
 )
@@ -25,11 +26,11 @@ func echoServer(conn net.Conn) error {
 
 func echoClient(conn net.Conn) error {
 	if err := WriteBlock(conn, []byte("test")); err != nil {
-		return err
+		return errx.Annotatef(err, "write block")
 	}
 	bytes, err := ReadBlock(conn)
 	if err != nil {
-		return err
+		return errx.Annotatef(err, "read block")
 	}
 	if string(bytes) != "test" {
 		return fmt.Errorf("expected \"test\", got \"%s\"", bytes)

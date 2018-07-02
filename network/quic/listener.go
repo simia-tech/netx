@@ -18,7 +18,7 @@ func init() {
 
 // Listen starts a listener at the provided address.
 func Listen(address string, options *value.Options) (net.Listener, error) {
-	l, err := quic.ListenAddr(address, options.TLSConfig, &quic.Config{})
+	l, err := quic.ListenAddr(address, options.TLSConfig, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -40,12 +40,13 @@ func (l *listener) Accept() (net.Conn, error) {
 	}
 
 	return &conn{
-		stream: stream,
+		session: session,
+		stream:  stream,
 	}, nil
 }
 
 func (l *listener) Addr() net.Addr {
-	return l.listener.Addr()
+	return &addr{address: l.listener.Addr().String()}
 }
 
 func (l *listener) Close() error {

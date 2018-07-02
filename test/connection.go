@@ -17,6 +17,7 @@ func ConnectionTest(t *testing.T, options *Options) {
 		defer listener.Close()
 
 		require.NoError(t, makeCalls(4, listener.Addr().String(), echoClient, options))
+		time.Sleep(100 * time.Millisecond)
 	})
 
 	t.Run("ClientClose", func(t *testing.T) {

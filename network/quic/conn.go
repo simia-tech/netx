@@ -23,7 +23,7 @@ func init() {
 
 // Dial opens a connection to the provided address.
 func Dial(address string, options *value.Options) (net.Conn, error) {
-	session, err := quic.DialAddr(address, options.TLSConfig, &quic.Config{})
+	session, err := quic.DialAddr(address, options.TLSConfig, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +56,7 @@ func (c *conn) Read(data []byte) (int, error) {
 }
 
 func (c *conn) Write(data []byte) (int, error) {
-	n, err := c.stream.Write(data)
-	return n, err
+	return c.stream.Write(data)
 }
 
 func (c *conn) Close() error {
@@ -77,10 +76,16 @@ func (c *conn) Close() error {
 }
 
 func (c *conn) LocalAddr() net.Addr {
+	if c.session == nil {
+		return nil
+	}
 	return c.session.LocalAddr()
 }
 
 func (c *conn) RemoteAddr() net.Addr {
+	if c.session == nil {
+		return nil
+	}
 	return c.session.RemoteAddr()
 }
 

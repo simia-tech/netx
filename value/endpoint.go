@@ -20,7 +20,7 @@ type endpoint struct {
 	options []Option
 }
 
-// NewEndpoint returns a new Dial with the provided values.
+// NewEndpoint returns a new Endpoint with the provided values.
 func NewEndpoint(network, address string, options ...Option) Endpoint {
 	return &endpoint{
 		network: network,
@@ -29,7 +29,12 @@ func NewEndpoint(network, address string, options ...Option) Endpoint {
 	}
 }
 
-// ParseEndpointURL parses the provided url and returns a Dial.
+// NewEndpointFromAddr returns a new Endpoint with values from the provided net.Addr.
+func NewEndpointFromAddr(addr net.Addr, options ...Option) Endpoint {
+	return NewEndpoint(addr.Network(), addr.String(), options...)
+}
+
+// ParseEndpointURL parses the provided url and returns a Endpoint.
 func ParseEndpointURL(url string, options ...Option) (Endpoint, error) {
 	u, err := neturl.Parse(url)
 	if err != nil {
@@ -38,7 +43,7 @@ func ParseEndpointURL(url string, options ...Option) (Endpoint, error) {
 	return NewEndpoint(u.Scheme, net.JoinHostPort(u.Hostname(), u.Port()), options...), nil
 }
 
-// MustParseEndpointURL works like ParseDialURL, but panics on error.
+// MustParseEndpointURL works like ParseEndpointURL, but panics on error.
 func MustParseEndpointURL(url string, options ...Option) Endpoint {
 	d, err := ParseEndpointURL(url, options...)
 	if err != nil {
