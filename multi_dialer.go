@@ -30,6 +30,12 @@ func NewMultiDialer(p provider.Interface, f filter.Interface, s selector.Interfa
 // Dial dials one the endpoints from the provided service.
 func (md *MultiDialer) Dial(ctx context.Context, service string) (net.Conn, error) {
 retry:
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
 	endpoints, err := md.provider.Endpoints(service)
 	if err != nil {
 		return nil, fmt.Errorf("provider: %v", err)
@@ -40,6 +46,10 @@ retry:
 		if err != nil {
 			return nil, fmt.Errorf("filter: %v", err)
 		}
+	}
+
+	if len(endpoints) == 0 {
+		return nil, ErrServiceUnavailable
 	}
 
 	endpoint, err := md.selector.Select(endpoints)

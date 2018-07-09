@@ -75,7 +75,7 @@ func TestMultiDialerEndpointFailure(t *testing.T) {
 
 	_, err = md.Dial(context.Background(), "test") // should fail
 	require.Error(t, err)
-	assert.Equal(t, "selector: no endpoint", err.Error())
+	assert.Equal(t, "service unavailable", err.Error())
 
 	wg.Wait()
 }
@@ -105,7 +105,7 @@ func TestMultiDialerEndpointRecovering(t *testing.T) {
 			case <-ctx.Done():
 				return
 			default:
-				conn, err := md.Dial(ctx, "test")
+				conn, err := md.Dial(context.Background(), "test")
 				require.NoError(t, err)
 				require.NoError(t, conn.Close())
 			}
