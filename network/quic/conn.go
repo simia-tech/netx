@@ -1,6 +1,7 @@
 package quic
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net"
@@ -22,8 +23,8 @@ func init() {
 }
 
 // Dial opens a connection to the provided address.
-func Dial(address string, options *value.Options) (net.Conn, error) {
-	session, err := quic.DialAddr(address, options.TLSConfig, nil)
+func Dial(ctx context.Context, address string, options *value.Options) (net.Conn, error) {
+	session, err := quic.DialAddrContext(ctx, address, options.TLSConfig, nil)
 	if err != nil {
 		return nil, err
 	}

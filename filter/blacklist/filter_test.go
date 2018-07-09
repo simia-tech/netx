@@ -34,6 +34,21 @@ func TestFilterFailedEndpoints(t *testing.T) {
 	assert.Empty(t, filteredEndpoints)
 }
 
+func TestFilterTwoFailedEndpoints(t *testing.T) {
+	f := blacklist.NewFilter(blacklist.ConstantBackoff(50 * time.Millisecond))
+	endpointOne := value.NewEndpoint("tcp", "localhost:1000")
+	endpointTwo := value.NewEndpoint("tcp", "localhost:2000")
+	endpoints := value.Endpoints{endpointOne, endpointTwo}
+
+	require.NoError(t, f.Failure(endpointOne))
+	require.NoError(t, f.Failure(endpointTwo))
+
+	filteredEndpoints, err := f.Filter(endpoints)
+	require.NoError(t, err)
+
+	assert.Empty(t, filteredEndpoints)
+}
+
 func TestFilterRecoveredEndpoints(t *testing.T) {
 	f := blacklist.NewFilter(blacklist.ConstantBackoff(50 * time.Millisecond))
 	endpoint := value.NewEndpoint("tcp", "localhost:1000")

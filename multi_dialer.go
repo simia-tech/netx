@@ -1,9 +1,11 @@
 package netx
 
 import (
+	"context"
 	"fmt"
 	"net"
 
+	"code.posteo.de/common/errx"
 	"github.com/simia-tech/netx/filter"
 	"github.com/simia-tech/netx/provider"
 	"github.com/simia-tech/netx/selector"
@@ -26,7 +28,7 @@ func NewMultiDialer(p provider.Interface, f filter.Interface, s selector.Interfa
 }
 
 // Dial dials one the endpoints from the provided service.
-func (md *MultiDialer) Dial(service string) (net.Conn, error) {
+func (md *MultiDialer) Dial(ctx context.Context, service string) (net.Conn, error) {
 retry:
 	endpoints, err := md.provider.Endpoints(service)
 	if err != nil {
@@ -45,9 +47,9 @@ retry:
 		return nil, fmt.Errorf("selector: %v", err)
 	}
 
-	conn, err := Dial(endpoint.Network(), endpoint.Address(), endpoint.Options()...)
+	conn, err := Dial(ctx, endpoint.Network(), endpoint.Address(), endpoint.Options()...)
 	if err != nil {
-		if _, ok := err.(*net.OpError); ok {
+		if _, ok := err.(*net.OpError); ok || errx.Cause(err) == context.DeadlineExceeded {
 			if md.filter != nil {
 				if err = md.filter.Failure(endpoint); err != nil {
 					return nil, fmt.Errorf("report failure to filter: %v", err)

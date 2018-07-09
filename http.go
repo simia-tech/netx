@@ -15,7 +15,7 @@ func NewHTTPTransport(network string, options ...value.Option) *http.Transport {
 	return &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: func(ctx context.Context, _, address string) (net.Conn, error) {
-			return Dial(network, address, options...)
+			return Dial(ctx, network, address, options...)
 		},
 		MaxIdleConns:          100,
 		IdleConnTimeout:       90 * time.Second,
@@ -30,7 +30,7 @@ func NewHTTPMultiTransport(md *MultiDialer) *http.Transport {
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: func(ctx context.Context, _, address string) (net.Conn, error) {
 			host, _, _ := net.SplitHostPort(address)
-			return md.Dial(host)
+			return md.Dial(ctx, host)
 		},
 		MaxIdleConns:          100,
 		IdleConnTimeout:       90 * time.Second,

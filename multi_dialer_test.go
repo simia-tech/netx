@@ -29,7 +29,7 @@ func TestMultiDialer(t *testing.T) {
 	md, err := netx.NewMultiDialer(p, nil, roundrobin.NewSelector())
 	require.NoError(t, err)
 
-	_, err = md.Dial("test")
+	_, err = md.Dial(ctx, "test")
 	require.NoError(t, err)
 	time.Sleep(10 * time.Millisecond)
 
@@ -54,9 +54,9 @@ func TestMultiDialerEndpointFailover(t *testing.T) {
 	md, err := netx.NewMultiDialer(p, nil, roundrobin.NewSelector())
 	require.NoError(t, err)
 
-	_, err = md.Dial("test") // should hit the listener
+	_, err = md.Dial(ctx, "test") // should hit the listener
 	require.NoError(t, err)
-	_, err = md.Dial("test") // should fail first and hit the listener again
+	_, err = md.Dial(ctx, "test") // should fail first and hit the listener again
 	require.NoError(t, err)
 
 	cancel()
@@ -73,7 +73,7 @@ func TestMultiDialerEndpointFailure(t *testing.T) {
 	md, err := netx.NewMultiDialer(p, blacklist.NewFilter(blacklist.ConstantBackoff(time.Millisecond)), roundrobin.NewSelector())
 	require.NoError(t, err)
 
-	_, err = md.Dial("test") // should fail
+	_, err = md.Dial(context.Background(), "test") // should fail
 	require.Error(t, err)
 	assert.Equal(t, "selector: no endpoint", err.Error())
 
@@ -105,7 +105,7 @@ func TestMultiDialerEndpointRecovering(t *testing.T) {
 			case <-ctx.Done():
 				return
 			default:
-				conn, err := md.Dial("test")
+				conn, err := md.Dial(ctx, "test")
 				require.NoError(t, err)
 				require.NoError(t, conn.Close())
 			}
@@ -151,7 +151,7 @@ func TestMultiDialerConcurrentDial(t *testing.T) {
 		clientWg.Add(1)
 		go func() {
 			for i := 0; i < 20; i++ {
-				_, err := md.Dial("test")
+				_, err := md.Dial(ctx, "test")
 				require.NoError(t, err)
 			}
 			clientWg.Done()

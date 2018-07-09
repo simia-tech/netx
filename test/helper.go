@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -124,7 +125,7 @@ func makeCalls(n int, address string, a action, options *Options) error {
 }
 
 func makeConn(address string, options *Options) (net.Conn, error) {
-	conn, err := netx.Dial(options.DialNetwork, address, options.DialOptions...)
+	conn, err := netx.Dial(context.Background(), options.DialNetwork, address, options.DialOptions...)
 	if err != nil {
 		return nil, err
 	}

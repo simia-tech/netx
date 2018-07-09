@@ -23,14 +23,6 @@ func TLS(value *tls.Config) Option {
 	}
 }
 
-// Timeout returns on options to set the dial timeout.
-func Timeout(value time.Duration) Option {
-	return func(o *Options) error {
-		o.Timeout = value
-		return nil
-	}
-}
-
 // Nodes returns on options to set the nodes.
 func Nodes(value ...string) Option {
 	return func(o *Options) error {

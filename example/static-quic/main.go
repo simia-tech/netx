@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
@@ -33,7 +34,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	conn, err := md.Dial("test")
+	conn, err := md.Dial(context.Background(), "test")
 	if err != nil {
 		log.Fatal(err)
 	}
