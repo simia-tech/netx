@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/simia-tech/errx"
 	"github.com/simia-tech/netx/filter"
@@ -13,17 +14,19 @@ import (
 
 // MultiDialer implements a multi dialer.
 type MultiDialer struct {
-	provider provider.Interface
-	filter   filter.Interface
-	selector selector.Interface
+	provider        provider.Interface
+	filter          filter.Interface
+	selector        selector.Interface
+	instanceTimeout time.Duration
 }
 
 // NewMultiDialer returns a new nulti dialer.
-func NewMultiDialer(p provider.Interface, f filter.Interface, s selector.Interface) (*MultiDialer, error) {
+func NewMultiDialer(p provider.Interface, f filter.Interface, s selector.Interface, it time.Duration) (*MultiDialer, error) {
 	return &MultiDialer{
-		provider: p,
-		filter:   f,
-		selector: s,
+		provider:        p,
+		filter:          f,
+		selector:        s,
+		instanceTimeout: it,
 	}, nil
 }
 
@@ -57,7 +60,9 @@ retry:
 		return nil, fmt.Errorf("selector: %v", err)
 	}
 
-	conn, err := Dial(ctx, endpoint.Network(), endpoint.Address(), endpoint.Options()...)
+	dialCtx, cancel := context.WithTimeout(ctx, md.instanceTimeout)
+	conn, err := Dial(dialCtx, endpoint.Network(), endpoint.Address(), endpoint.Options()...)
+	cancel()
 	if err != nil {
 		if _, ok := err.(*net.OpError); ok || errx.Cause(err) == context.DeadlineExceeded {
 			if md.filter != nil {

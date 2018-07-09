@@ -26,7 +26,7 @@ func TestMultiDialer(t *testing.T) {
 	p := static.NewProvider()
 	p.Add("test", ep)
 
-	md, err := netx.NewMultiDialer(p, nil, roundrobin.NewSelector())
+	md, err := netx.NewMultiDialer(p, nil, roundrobin.NewSelector(), 100*time.Millisecond)
 	require.NoError(t, err)
 
 	_, err = md.Dial(ctx, "test")
@@ -51,7 +51,7 @@ func TestMultiDialerEndpointFailover(t *testing.T) {
 	p.Add("test", ep)
 	p.Add("test", value.NewEndpoint("tcp", "127.0.0.1:5020")) // not existing
 
-	md, err := netx.NewMultiDialer(p, nil, roundrobin.NewSelector())
+	md, err := netx.NewMultiDialer(p, nil, roundrobin.NewSelector(), 100*time.Millisecond)
 	require.NoError(t, err)
 
 	_, err = md.Dial(ctx, "test") // should hit the listener
@@ -70,7 +70,7 @@ func TestMultiDialerEndpointFailure(t *testing.T) {
 	p := static.NewProvider()
 	p.Add("test", value.NewEndpoint("tcp", "127.0.0.1:5020")) // not existing
 
-	md, err := netx.NewMultiDialer(p, blacklist.NewFilter(blacklist.ConstantBackoff(time.Millisecond)), roundrobin.NewSelector())
+	md, err := netx.NewMultiDialer(p, blacklist.NewFilter(blacklist.ConstantBackoff(time.Millisecond)), roundrobin.NewSelector(), 100*time.Millisecond)
 	require.NoError(t, err)
 
 	_, err = md.Dial(context.Background(), "test") // should fail
@@ -96,7 +96,7 @@ func TestMultiDialerEndpointRecovering(t *testing.T) {
 	p.Add("test", ep1)
 	p.Add("test", ep2)
 
-	md, err := netx.NewMultiDialer(p, nil, roundrobin.NewSelector())
+	md, err := netx.NewMultiDialer(p, nil, roundrobin.NewSelector(), 100*time.Millisecond)
 	require.NoError(t, err)
 
 	go func() {
@@ -143,7 +143,7 @@ func TestMultiDialerConcurrentDial(t *testing.T) {
 	p.Add("test", ep1)
 	p.Add("test", ep2)
 
-	md, err := netx.NewMultiDialer(p, nil, roundrobin.NewSelector())
+	md, err := netx.NewMultiDialer(p, nil, roundrobin.NewSelector(), 100*time.Millisecond)
 	require.NoError(t, err)
 
 	clientWg := sync.WaitGroup{}
