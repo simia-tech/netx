@@ -7,7 +7,7 @@ import (
 	"net"
 	"testing"
 
-	"code.posteo.de/common/errx"
+	"github.com/simia-tech/errx"
 	"github.com/simia-tech/netx"
 	"github.com/stretchr/testify/require"
 )

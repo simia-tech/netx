@@ -92,6 +92,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/simia-tech/errx"
+  packages = ["."]
+  revision = "d0b874c74539e53a6307779dbc83f026a477788b"
+
+[[projects]]
   name = "github.com/stretchr/testify"
   packages = ["assert","require"]
   revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
@@ -136,6 +142,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "55f1321dc4702fc33b8da8b4d8bf76a22d07fe7aa75760b9e5e50dd00875aaf5"
+  inputs-digest = "a62fa834fac7ec0a3fc200bf3d2861f5569cb9433b0c87f71a82c3ef1187aa93"
   solver-name = "gps-cdcl"
   solver-version = 1

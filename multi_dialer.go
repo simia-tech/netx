@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net"
 
-	"code.posteo.de/common/errx"
+	"github.com/simia-tech/errx"
 	"github.com/simia-tech/netx/filter"
 	"github.com/simia-tech/netx/provider"
 	"github.com/simia-tech/netx/selector"
