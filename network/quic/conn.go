@@ -16,6 +16,7 @@ import (
 type conn struct {
 	session quic.Session
 	stream  quic.Stream
+	conn    *net.UDPConn
 }
 
 func init() {
@@ -24,7 +25,17 @@ func init() {
 
 // Dial opens a connection to the provided address.
 func Dial(ctx context.Context, address string, options *value.Options) (net.Conn, error) {
-	session, err := quic.DialAddrContext(ctx, address, options.TLSConfig, nil)
+	udpAddr, err := net.ResolveUDPAddr("udp", address)
+	if err != nil {
+		return nil, err
+	}
+
+	udpConn, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.IPv4zero, Port: 0})
+	if err != nil {
+		return nil, err
+	}
+
+	session, err := quic.DialContext(ctx, udpConn, udpAddr, address, options.TLSConfig, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -37,6 +48,7 @@ func Dial(ctx context.Context, address string, options *value.Options) (net.Conn
 	return &conn{
 		session: session,
 		stream:  stream,
+		conn:    udpConn,
 	}, nil
 }
 
@@ -71,6 +83,12 @@ func (c *conn) Close() error {
 		return nil
 	}
 	if err := c.session.Close(nil); err != nil {
+		return err
+	}
+	if c.conn == nil {
+		return nil
+	}
+	if err := c.conn.Close(); err != nil {
 		return err
 	}
 	return nil
