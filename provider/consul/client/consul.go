@@ -35,7 +35,7 @@ func NewConsul(urls []string, options ...value.Option) (*Consul, error) {
 		p.Add("consul", dial)
 	}
 
-	md, err := netx.NewMultiDialer(p, blacklist.NewFilter(blacklist.ConstantBackoff(100*time.Millisecond)), roundrobin.NewSelector())
+	md, err := netx.NewMultiDialer(p, blacklist.NewFilter(blacklist.ConstantBackoff(100*time.Millisecond)), roundrobin.NewSelector(), time.Second)
 	if err != nil {
 		return nil, err
 	}

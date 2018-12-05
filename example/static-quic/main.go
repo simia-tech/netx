@@ -29,7 +29,7 @@ func main() {
 	provider.Add("test", value.NewEndpointFromAddr(<-addrOneChan, value.TLS(&tls.Config{InsecureSkipVerify: true})))
 	provider.Add("test", value.NewEndpointFromAddr(<-addrTwoChan, value.TLS(&tls.Config{InsecureSkipVerify: true})))
 
-	md, err := netx.NewMultiDialer(provider, blacklist.NewFilter(blacklist.ConstantBackoff(100*time.Millisecond)), roundrobin.NewSelector())
+	md, err := netx.NewMultiDialer(provider, blacklist.NewFilter(blacklist.ConstantBackoff(100*time.Millisecond)), roundrobin.NewSelector(), time.Second)
 	if err != nil {
 		log.Fatal(err)
 	}

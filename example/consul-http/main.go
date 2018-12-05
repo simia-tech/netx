@@ -36,7 +36,7 @@ func main() {
 		server.Serve(listener)
 	}()
 
-	md, err := netx.NewMultiDialer(provider, blacklist.NewFilter(blacklist.ConstantBackoff(100*time.Millisecond)), roundrobin.NewSelector())
+	md, err := netx.NewMultiDialer(provider, blacklist.NewFilter(blacklist.ConstantBackoff(100*time.Millisecond)), roundrobin.NewSelector(), time.Second)
 	if err != nil {
 		log.Fatal(err)
 	}
