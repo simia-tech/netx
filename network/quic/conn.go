@@ -82,7 +82,7 @@ func (c *conn) Close() error {
 	if c.session == nil {
 		return nil
 	}
-	if err := c.session.Close(nil); err != nil {
+	if err := c.session.Close(); err != nil {
 		return err
 	}
 	if c.conn == nil {
